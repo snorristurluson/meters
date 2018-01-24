@@ -18,7 +18,7 @@ def find_rotation_angle(gray):
     for each in lines:
         rho, theta = each[0]
         theta_deg = theta * 180 / np.pi
-        if theta_deg > 70 and theta_deg < 110:
+        if 70 < theta_deg < 110:
             candidates.append(each)
 
     lines = candidates
@@ -60,7 +60,7 @@ def find_aligned_bounding_boxes(bb, bounding_boxes):
     center = y0 + h0 / 2
     for candidate in bounding_boxes:
         x, y, w, h = candidate
-        if center >= y and center <= y + h and x > x0:
+        if y <= center <= y + h and x > x0:
             result.append(candidate)
     result.sort()
 
@@ -103,9 +103,9 @@ def drawlines(img, lines):
         x0 = a * rho
         y0 = b * rho
         x1 = int(x0 + 1000 * (-b))
-        y1 = int(y0 + 1000 * (a))
+        y1 = int(y0 + 1000 * a)
         x2 = int(x0 - 1000 * (-b))
-        y2 = int(y0 - 1000 * (a))
+        y2 = int(y0 - 1000 * a)
 
         cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
@@ -117,15 +117,14 @@ def save_digits(digits):
         i += 1
 
 
-
 def process_image(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rotation_angle, lines, for_angle = find_rotation_angle(gray)
     gray = cv2.medianBlur(gray, 3)
     gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 3)
-    M = cv2.getRotationMatrix2D((400, 300), rotation_angle, 1)
-    gray = cv2.warpAffine(gray, M, (800, 600))
-    for_digits = cv2.warpAffine(img, M, (800, 600))
+    m = cv2.getRotationMatrix2D((400, 300), rotation_angle, 1)
+    gray = cv2.warpAffine(gray, m, (800, 600))
+    for_digits = cv2.warpAffine(img, m, (800, 600))
     for_digits = cv2.cvtColor(for_digits, cv2.COLOR_BGR2GRAY)
     for_contours = gray.copy()
     _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
