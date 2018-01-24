@@ -178,6 +178,15 @@ def show_images(original, for_angle, contoured, digits):
     plt.show()
 
 
+def take_picture():
+    cap = cv2.VideoCapture(0)
+    for i in range(30):
+        cap.read()
+    ret, img = cap.read()
+    cap.release()
+    return img, ret
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -206,16 +215,16 @@ def main():
         process_image(img, args)
 
     else:
-        cap = cv2.VideoCapture(0)
-        time.sleep(2)
         while True:
-            ret, img = cap.read()
+            img, ret = take_picture()
+
             if ret:
                 args.prefix = time.strftime("%Y%m%d_%H%M%S")
                 process_image(img, args)
-                time.sleep(15)
             else:
                 print("Couldn't read frame", ret)
+
+            time.sleep(15)
 
 
 if __name__ == "__main__":
