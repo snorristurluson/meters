@@ -134,23 +134,24 @@ def process_image(img, args):
     for_digits = cv2.warpAffine(img, m, (800, 600))
     for_digits = cv2.cvtColor(for_digits, cv2.COLOR_BGR2GRAY)
     for_contours = gray.copy()
-    cv2.imwrite("%s_contours.png" % args.prefix, for_contours)
     _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
     bounding_boxes = get_bounding_boxes_for_contours(contours)
     digit_bounding_boxes = find_digit_bounding_boxes(bounding_boxes)
     digits = extract_digits(digit_bounding_boxes, for_digits)
 
+    contoured = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+    for bb in digit_bounding_boxes:
+        pt1 = (bb[0], bb[1])
+        pt2 = (bb[0] + bb[2], bb[1] + bb[3])
+        contoured = cv2.rectangle(contoured, pt1, pt2, (0, 255, 0))
+    cv2.imwrite("%s_contours.png" % args.prefix, contoured)
+
     if args.save_digits:
         save_digits(digits, args)
 
     if args.show_images:
-        contoured = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
         for_angle = cv2.cvtColor(for_angle, cv2.COLOR_GRAY2BGR)
         drawlines(for_angle, lines)
-        for bb in digit_bounding_boxes:
-            pt1 = (bb[0], bb[1])
-            pt2 = (bb[0] + bb[2], bb[1] + bb[3])
-            contoured = cv2.rectangle(contoured, pt1, pt2, (0, 255, 0))
         show_images(img, for_angle, contoured, digits)
 
 
