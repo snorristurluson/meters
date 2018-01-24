@@ -5,7 +5,6 @@ import numpy as np
 import sys
 
 import time
-from matplotlib import pyplot as plt
 
 
 def find_rotation_angle(gray):
@@ -156,6 +155,8 @@ def process_image(img, args):
 
 
 def show_images(original, for_angle, contoured, digits):
+    from matplotlib import pyplot as plt
+
     plt.subplot(331), plt.imshow(original, cmap='gray')
     plt.title('Original Image'), plt.xticks([]), plt.yticks([])
     plt.subplot(332), plt.imshow(for_angle, cmap='gray')
@@ -206,12 +207,15 @@ def main():
 
     else:
         cap = cv2.VideoCapture(0)
+        time.sleep(2)
         while True:
             ret, img = cap.read()
             if ret:
                 args.prefix = time.strftime("%Y%m%d_%H%M%S")
                 process_image(img, args)
                 time.sleep(15)
+            else:
+                print("Couldn't read frame", ret)
 
 
 if __name__ == "__main__":
