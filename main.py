@@ -1,5 +1,10 @@
+import argparse
+
 import cv2
 import numpy as np
+import sys
+
+import time
 from matplotlib import pyplot as plt
 
 
@@ -110,14 +115,17 @@ def drawlines(img, lines):
         cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
 
-def save_digits(digits):
+def save_digits(digits, args):
     i = 0
     for digit in digits:
-        cv2.imwrite("digit_%s.png" % i, digit)
+        cv2.imwrite("%s_digit_%s.png" % (args.prefix, i), digit)
         i += 1
 
 
-def process_image(img):
+def process_image(img, args):
+    img = cv2.resize(img, (800, 600), interpolation=cv2.INTER_CUBIC)
+    cv2.imwrite("%s_input.png" % args.prefix, img)
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rotation_angle, lines, for_angle = find_rotation_angle(gray)
     gray = cv2.medianBlur(gray, 3)
@@ -127,19 +135,24 @@ def process_image(img):
     for_digits = cv2.warpAffine(img, m, (800, 600))
     for_digits = cv2.cvtColor(for_digits, cv2.COLOR_BGR2GRAY)
     for_contours = gray.copy()
+    cv2.imwrite("%s_contours.png" % args.prefix, for_contours)
     _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
     bounding_boxes = get_bounding_boxes_for_contours(contours)
     digit_bounding_boxes = find_digit_bounding_boxes(bounding_boxes)
     digits = extract_digits(digit_bounding_boxes, for_digits)
-    save_digits(digits)
-    contoured = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-    for_angle = cv2.cvtColor(for_angle, cv2.COLOR_GRAY2BGR)
-    drawlines(for_angle, lines)
-    for bb in digit_bounding_boxes:
-        pt1 = (bb[0], bb[1])
-        pt2 = (bb[0] + bb[2], bb[1] + bb[3])
-        contoured = cv2.rectangle(contoured, pt1, pt2, (0, 255, 0))
-    show_images(img, for_angle, contoured, digits)
+
+    if args.save_digits:
+        save_digits(digits, args)
+
+    if args.show_images:
+        contoured = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        for_angle = cv2.cvtColor(for_angle, cv2.COLOR_GRAY2BGR)
+        drawlines(for_angle, lines)
+        for bb in digit_bounding_boxes:
+            pt1 = (bb[0], bb[1])
+            pt2 = (bb[0] + bb[2], bb[1] + bb[3])
+            contoured = cv2.rectangle(contoured, pt1, pt2, (0, 255, 0))
+        show_images(img, for_angle, contoured, digits)
 
 
 def show_images(original, for_angle, contoured, digits):
@@ -165,9 +178,41 @@ def show_images(original, for_angle, contoured, digits):
 
 
 def main():
-    img = cv2.imread("09-20180124195013-01.jpg")
-    img = cv2.resize(img, (800, 600), interpolation=cv2.INTER_CUBIC)
-    process_image(img)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i", "--show-images",
+        action="store_true",
+        help="Show images after processing source image"
+    )
+    parser.add_argument(
+        "-s", "--save-digits",
+        action="store_true",
+        help="Store digit images rather than identifying them"
+    )
+    parser.add_argument(
+        "-t", "--test-image",
+        help="Test an image from file, rather than capturing"
+    )
+    parser.add_argument(
+        "-p", "--prefix",
+        default=time.strftime("%Y%m%d_%H%M%S"),
+        help="Prefix for image names"
+    )
+    args = parser.parse_args()
+
+    if args.test_image:
+        img = cv2.imread(args.test_image)
+        process_image(img, args)
+
+    else:
+        cap = cv2.VideoCapture(0)
+        while True:
+            ret, img = cap.read()
+            if ret:
+                args.prefix = time.strftime("%Y%m%d_%H%M%S")
+                process_image(img, args)
+                time.sleep(15)
 
 
-main()
+if __name__ == "__main__":
+    sys.exit(main())
