@@ -8,6 +8,8 @@ import time
 
 
 def find_rotation_angle(gray):
+    return 0, [], gray
+
     gray = cv2.medianBlur(gray, 3)
     ret, gray = cv2.threshold(gray, 120, 255, cv2.THRESH_TRIANGLE)
     gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
@@ -48,9 +50,9 @@ def get_bounding_boxes_for_contours(contours):
             continue
         if h < 15:
             continue
-        if w > 50:
+        if w > 40:
             continue
-        if h > 70:
+        if h > 60:
             continue
         if w > h:
             continue
@@ -64,18 +66,19 @@ def find_aligned_bounding_boxes(bb, bounding_boxes):
     center = y0 + h0 / 2
     for candidate in bounding_boxes:
         x, y, w, h = candidate
-        if y <= center <= y + h and x > x0:
+        if abs(y - y0) < 10:
             result.append(candidate)
     result.sort()
 
-    # check for gaps
+    # check for gaps and overlaps
     final_result = [bb]
     for candidate in result:
         x, y, w, h = candidate
         if x < x0 + w0 + 30:
-            final_result.append(candidate)
-            x0 = x
-            w0 = w
+            if x > x0 and x + w > x0 + w0:
+                final_result.append(candidate)
+                x0 = x
+                w0 = w
 
     return final_result
 
@@ -127,14 +130,14 @@ def process_image(img, args):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rotation_angle, lines, for_angle = find_rotation_angle(gray)
-    gray = cv2.medianBlur(gray, 3)
-    gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 3)
+    gray = cv2.medianBlur(gray, 5)
+    gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 10)
     m = cv2.getRotationMatrix2D((400, 300), rotation_angle, 1)
     gray = cv2.warpAffine(gray, m, (800, 600))
     for_digits = cv2.warpAffine(img, m, (800, 600))
     for_digits = cv2.cvtColor(for_digits, cv2.COLOR_BGR2GRAY)
     for_contours = gray.copy()
-    _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
+    _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     bounding_boxes = get_bounding_boxes_for_contours(contours)
     digit_bounding_boxes = find_digit_bounding_boxes(bounding_boxes)
     digits = extract_digits(digit_bounding_boxes, for_digits)
