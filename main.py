@@ -131,7 +131,7 @@ def process_image(img, args):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rotation_angle, lines, for_angle = find_rotation_angle(gray)
     gray = cv2.medianBlur(gray, 5)
-    gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 10)
+    gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 5)
     m = cv2.getRotationMatrix2D((400, 300), rotation_angle, 1)
     gray = cv2.warpAffine(gray, m, (800, 600))
     for_digits = cv2.warpAffine(img, m, (800, 600))
