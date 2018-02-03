@@ -5,6 +5,7 @@ import time
 import cv2
 import numpy as np
 
+from dials import filter_contours
 from digits import extract_digits, find_aligned_bounding_boxes, get_bounding_boxes_for_contours
 
 
@@ -18,36 +19,50 @@ class HotWaterMeter(object):
 
     def process_image(self, image):
         self.image = cv2.resize(image, (800, 600), interpolation=cv2.INTER_CUBIC)
+        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        self.gray = cv2.bilateralFilter(self.gray, 5, 150, 150)
+        self.output = cv2.cvtColor(self.gray, cv2.COLOR_GRAY2BGR)
+
         self.process_digits()
         return self.output
 
 
     def process_digits(self):
-        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        self.gray = cv2.bilateralFilter(self.gray, 5, 150, 150)
 
-        self.threshold = cv2.medianBlur(self.gray, 5)
-        self.threshold = cv2.adaptiveThreshold(self.threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 4)
+        threshold = cv2.medianBlur(self.gray, 5)
+        threshold = cv2.adaptiveThreshold(threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3)
 
-        for_contours = self.threshold.copy()
+        for_contours = threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         bounding_boxes = get_bounding_boxes_for_contours(contours)
         digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
         digits = extract_digits(digit_bounding_boxes, self.gray)
 
-        contoured = cv2.cvtColor(self.threshold, cv2.COLOR_GRAY2BGR)
         for bb in digit_bounding_boxes:
             pt1 = (bb[0], bb[1])
             pt2 = (bb[0] + bb[2], bb[1] + bb[3])
-            contoured = cv2.rectangle(contoured, pt1, pt2, (0, 255, 0))
+            self.output = cv2.rectangle(self.output, pt1, pt2, (0, 255, 0))
 
         x = 8
         for digit in digits:
             digit = cv2.cvtColor(digit, cv2.COLOR_GRAY2BGR)
-            contoured[8:24, x:x + 16] = digit
+            self.output[8:24, x:x + 16] = digit
             x += 18
 
-        self.output = contoured
+
+    def process_dials(self):
+        ret, threshold = cv2.threshold(self.gray, 60, 255, cv2.THRESH_BINARY_INV)
+        for_contours = threshold.copy()
+        _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
+        contours = filter_contours(contours)
+
+        cv2.drawContours(self.output, contours, -1, (0, 255, 0))
+        for each in contours:
+            rect = cv2.minAreaRect(each)
+            x, y, angle = rect
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+            self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
 
     def find_digit_bounding_boxes(self, bounding_boxes):
         longest_chain = []
