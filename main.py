@@ -52,7 +52,7 @@ class HotWaterMeter(object):
             x += 18
 
     def process_dials(self):
-        ret, threshold = cv2.threshold(self.gray, 60, 255, cv2.THRESH_BINARY_INV)
+        ret, threshold = cv2.threshold(self.gray, 40, 255, cv2.THRESH_BINARY_INV)
         for_contours = threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         contours = self.filter_dial_contours(contours)
@@ -125,7 +125,7 @@ class HotWaterMeter(object):
             self.digit_pos_max = last_digit[0] + last_digit[2]
 
         if first_digit[1] > self.digit_vertical_pos:
-            self.digit_vertical_pos = first_digit[1]
+            self.digit_vertical_pos = first_digit[1] + first_digit[2]
             print("Y:", self.digit_vertical_pos)
 
         self.last_known_digit_bounding_boxes = longest_chain
