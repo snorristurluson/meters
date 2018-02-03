@@ -48,15 +48,6 @@ def get_bounding_boxes_for_contours(contours):
     return bounding_boxes
 
 
-def find_digit_bounding_boxes(bounding_boxes):
-    longest_chain = []
-    for bb in bounding_boxes:
-        aligned = find_aligned_bounding_boxes(bb, bounding_boxes)
-        if len(aligned) > len(longest_chain):
-            longest_chain = aligned
-    return longest_chain[:6]
-
-
 def extract_digits(digit_bounding_boxes, img):
     digits = []
     for bb in digit_bounding_boxes:

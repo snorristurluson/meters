@@ -5,12 +5,15 @@ import time
 import cv2
 import numpy as np
 
-from digits import get_bounding_boxes_for_contours, find_digit_bounding_boxes, extract_digits
+from digits import extract_digits, find_aligned_bounding_boxes, get_bounding_boxes_for_contours
 
 
 class HotWaterMeter(object):
     def __init__(self):
         self.image = None
+        self.leftmost_digit_pos = None
+        self.last_known_digit_bounding_boxes = []
+        self.digit_vertical_pos = 0
 
 
     def process_image(self, image):
@@ -29,7 +32,7 @@ class HotWaterMeter(object):
         for_contours = self.threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         bounding_boxes = get_bounding_boxes_for_contours(contours)
-        digit_bounding_boxes = find_digit_bounding_boxes(bounding_boxes)
+        digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
         digits = extract_digits(digit_bounding_boxes, self.gray)
 
         contoured = cv2.cvtColor(self.threshold, cv2.COLOR_GRAY2BGR)
@@ -45,6 +48,30 @@ class HotWaterMeter(object):
             x += 18
 
         self.output = contoured
+
+    def find_digit_bounding_boxes(self, bounding_boxes):
+        longest_chain = []
+        for bb in bounding_boxes:
+            aligned = find_aligned_bounding_boxes(bb, bounding_boxes)
+            if len(aligned) > len(longest_chain):
+                longest_chain = aligned
+
+        if len(longest_chain) < 5:
+            return self.last_known_digit_bounding_boxes
+
+        if self.leftmost_digit_pos is None:
+            self.leftmost_digit_pos = longest_chain[0][0]
+
+        if longest_chain[0][0] < self.leftmost_digit_pos:
+            self.leftmost_digit_pos = longest_chain[0][0]
+            print("X:", self.leftmost_digit_pos)
+
+        if longest_chain[0][1] > self.digit_vertical_pos:
+            self.digit_vertical_pos = longest_chain[0][1]
+            print("Y:", self.digit_vertical_pos)
+
+        self.last_known_digit_bounding_boxes = longest_chain
+        return longest_chain[:6]
 
 
 def find_rotation_angle(gray):
@@ -212,3 +239,5 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
