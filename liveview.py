@@ -2,7 +2,8 @@ import cv2
 from flask import render_template, Response, Flask
 
 from dials import process_dials
-from main import process_digits
+from digits import process_digits
+from main import HotWaterMeter
 
 
 class VideoCamera(object):
@@ -40,7 +41,9 @@ def gen(camera):
 
 @app.route('/dials')
 def dials():
-    camera = VideoCamera(process_digits)
+    meter = HotWaterMeter()
+
+    camera = VideoCamera(meter.process_image)
 
     return Response(gen(camera),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
