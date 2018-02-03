@@ -7,6 +7,8 @@ import numpy as np
 
 from digits import extract_digits, find_aligned_bounding_boxes, get_bounding_boxes_for_contours
 
+DIAL_AREA_HEIGHT = 180
+
 
 class HotWaterMeter(object):
     def __init__(self):
@@ -75,22 +77,22 @@ class HotWaterMeter(object):
         )
         cv2.line(
             self.output,
-            (self.digit_pos_min, self.digit_vertical_pos + 200),
-            (self.digit_pos_max, self.digit_vertical_pos + 200),
+            (self.digit_pos_min, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
+            (self.digit_pos_max, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
             (0, 0, 255),
             2
         )
         cv2.line(
             self.output,
             (self.digit_pos_min, self.digit_vertical_pos),
-            (self.digit_pos_min, self.digit_vertical_pos + 200),
+            (self.digit_pos_min, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
             (0, 0, 255),
             2
         )
         cv2.line(
             self.output,
             (self.digit_pos_max, self.digit_vertical_pos),
-            (self.digit_pos_max, self.digit_vertical_pos + 200),
+            (self.digit_pos_max, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
             (0, 0, 255),
             2
         )
@@ -147,10 +149,8 @@ class HotWaterMeter(object):
 
         if first_digit[0] < self.digit_pos_min:
             self.digit_pos_min = first_digit[0]
-            print("X:", self.digit_pos_min)
-
-        if last_digit[0] + last_digit[2] > self.digit_pos_max:
             self.digit_pos_max = last_digit[0] + last_digit[2]
+            print("X:", self.digit_pos_min)
 
         if first_digit[1] > self.digit_vertical_pos:
             self.digit_vertical_pos = first_digit[1] + first_digit[2]
