@@ -24,15 +24,15 @@ class HotWaterMeter(object):
         self.gray = cv2.bilateralFilter(self.gray, 5, 150, 150)
 
         self.threshold = cv2.medianBlur(self.gray, 5)
-        self.threshold = cv2.adaptiveThreshold(self.threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 5)
+        self.threshold = cv2.adaptiveThreshold(self.threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 4)
 
-        for_contours = self.gray.copy()
+        for_contours = self.threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         bounding_boxes = get_bounding_boxes_for_contours(contours)
         digit_bounding_boxes = find_digit_bounding_boxes(bounding_boxes)
         digits = extract_digits(digit_bounding_boxes, self.gray)
 
-        contoured = cv2.cvtColor(self.gray, cv2.COLOR_GRAY2BGR)
+        contoured = cv2.cvtColor(self.threshold, cv2.COLOR_GRAY2BGR)
         for bb in digit_bounding_boxes:
             pt1 = (bb[0], bb[1])
             pt2 = (bb[0] + bb[2], bb[1] + bb[3])
