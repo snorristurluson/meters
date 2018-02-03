@@ -10,6 +10,7 @@ import time
 def process_digits(image):
     img = cv2.resize(image, (800, 600), interpolation=cv2.INTER_CUBIC)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.bilateralFilter(gray, 5, 150, 150)
     gray = cv2.medianBlur(gray, 5)
     gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 5)
     for_contours = gray.copy()
@@ -27,8 +28,8 @@ def process_digits(image):
     x = 8
     for digit in digits:
         digit = cv2.cvtColor(digit, cv2.COLOR_GRAY2BGR)
-        contoured[x:x + 16, 8:24] = digit
-        x += 8
+        contoured[8:24, x:x + 16] = digit
+        x += 18
 
     return contoured
 
