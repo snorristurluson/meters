@@ -66,6 +66,35 @@ class HotWaterMeter(object):
             box = np.int0(box)
             self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
 
+        cv2.line(
+            self.output,
+            (self.digit_pos_min, self.digit_vertical_pos),
+            (self.digit_pos_max, self.digit_vertical_pos),
+            (0, 0, 255),
+            2
+        )
+        cv2.line(
+            self.output,
+            (self.digit_pos_min, self.digit_vertical_pos + 200),
+            (self.digit_pos_max, self.digit_vertical_pos + 200),
+            (0, 0, 255),
+            2
+        )
+        cv2.line(
+            self.output,
+            (self.digit_pos_min, self.digit_vertical_pos),
+            (self.digit_pos_min, self.digit_vertical_pos + 200),
+            (0, 0, 255),
+            2
+        )
+        cv2.line(
+            self.output,
+            (self.digit_pos_max, self.digit_vertical_pos),
+            (self.digit_pos_max, self.digit_vertical_pos + 200),
+            (0, 0, 255),
+            2
+        )
+
     def filter_dial_contours(self, contours):
         filtered = []
         for each in contours:
