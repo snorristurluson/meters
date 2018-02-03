@@ -7,31 +7,6 @@ import time
 import numpy as np
 
 
-def filter_contours(contours):
-    filtered = []
-    for each in contours:
-        bb = cv2.boundingRect(each)
-        x, y, w, h = bb
-        if w < 15:
-            continue
-        if h < 15:
-            continue
-        if w > 60:
-            continue
-        if h > 60:
-            continue
-
-        rect = cv2.minAreaRect(each)
-        pos, dim, angle = rect
-        w, h = dim
-        if abs(w-h) < 8:
-            continue
-
-        filtered.append(each)
-
-    return filtered
-
-
 def process_image(img, args):
     img = cv2.resize(img, (800, 600), interpolation=cv2.INTER_CUBIC)
     cv2.imwrite("%s_input.png" % args.prefix, img)

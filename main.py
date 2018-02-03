@@ -5,14 +5,14 @@ import time
 import cv2
 import numpy as np
 
-from dials import filter_contours
 from digits import extract_digits, find_aligned_bounding_boxes, get_bounding_boxes_for_contours
 
 
 class HotWaterMeter(object):
     def __init__(self):
         self.image = None
-        self.leftmost_digit_pos = None
+        self.digit_pos_min = 800
+        self.digit_pos_max = 0
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
 
@@ -51,12 +51,11 @@ class HotWaterMeter(object):
             self.output[8:24, x:x + 16] = digit
             x += 18
 
-
     def process_dials(self):
         ret, threshold = cv2.threshold(self.gray, 60, 255, cv2.THRESH_BINARY_INV)
         for_contours = threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
-        contours = filter_contours(contours)
+        contours = self.filter_dial_contours(contours)
 
         self.output = cv2.cvtColor(threshold, cv2.COLOR_GRAY2BGR)
         cv2.drawContours(self.output, contours, -1, (0, 255, 0))
@@ -66,6 +65,38 @@ class HotWaterMeter(object):
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
+
+    def filter_dial_contours(self, contours):
+        filtered = []
+        for each in contours:
+            bb = cv2.boundingRect(each)
+            x, y, w, h = bb
+            if y < self.digit_vertical_pos:
+                continue
+            if y > self.digit_vertical_pos + 300:
+                continue
+            if x < self.digit_pos_min - 100:
+                continue
+            if x > self.digit_pos_max + 100:
+                continue
+            if w < 15:
+                continue
+            if h < 15:
+                continue
+            if w > 60:
+                continue
+            if h > 60:
+                continue
+
+            rect = cv2.minAreaRect(each)
+            pos, dim, angle = rect
+            w, h = dim
+            if abs(w - h) < 8:
+                continue
+
+            filtered.append(each)
+
+        return filtered
 
     def find_digit_bounding_boxes(self, bounding_boxes):
         longest_chain = []
@@ -77,15 +108,24 @@ class HotWaterMeter(object):
         if len(longest_chain) < 5:
             return self.last_known_digit_bounding_boxes
 
-        if self.leftmost_digit_pos is None:
-            self.leftmost_digit_pos = longest_chain[0][0]
+        first_digit = longest_chain[0]
+        last_digit = longest_chain[-1]
 
-        if longest_chain[0][0] < self.leftmost_digit_pos:
-            self.leftmost_digit_pos = longest_chain[0][0]
-            print("X:", self.leftmost_digit_pos)
+        if self.digit_pos_min is None:
+            self.digit_pos_min = first_digit[0]
 
-        if longest_chain[0][1] > self.digit_vertical_pos:
-            self.digit_vertical_pos = longest_chain[0][1]
+        if self.digit_pos_max is None:
+            self.digit_pos_max = last_digit[0] + last_digit[2]
+
+        if first_digit[0] < self.digit_pos_min:
+            self.digit_pos_min = first_digit[0]
+            print("X:", self.digit_pos_min)
+
+        if last_digit[0] + last_digit[2] > self.digit_pos_max:
+            self.digit_pos_max = last_digit[0] + last_digit[2]
+
+        if first_digit[1] > self.digit_vertical_pos:
+            self.digit_vertical_pos = first_digit[1]
             print("Y:", self.digit_vertical_pos)
 
         self.last_known_digit_bounding_boxes = longest_chain
