@@ -140,6 +140,8 @@ class HotWaterMeter(object):
         if len(longest_chain) < 5:
             return self.last_known_digit_bounding_boxes
 
+        longest_chain = longest_chain[:6]
+
         first_digit = longest_chain[0]
         last_digit = longest_chain[-1]
 
