@@ -24,6 +24,12 @@ def process_digits(image):
         pt2 = (bb[0] + bb[2], bb[1] + bb[3])
         contoured = cv2.rectangle(contoured, pt1, pt2, (0, 255, 0))
 
+    x = 8
+    for digit in digits:
+        digit = cv2.cvtColor(digit, cv2.COLOR_GRAY2BGR)
+        contoured[x:x + 16, 8:24] = digit
+        x += 8
+
     return contoured
 
 
