@@ -7,7 +7,7 @@ import numpy as np
 
 from digits import extract_digits, find_aligned_bounding_boxes, get_bounding_boxes_for_contours
 
-DIAL_AREA_LEFT_OFFSET = 40
+DIAL_AREA_LEFT_OFFSET = 50
 
 DIAL_AREA_HEIGHT = 180
 
