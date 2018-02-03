@@ -69,8 +69,13 @@ class HotWaterMeter(object):
     def filter_dial_contours(self, contours):
         filtered = []
         for each in contours:
-            bb = cv2.boundingRect(each)
-            x, y, w, h = bb
+            rect = cv2.minAreaRect(each)
+            pos, dim, angle = rect
+            x, y = pos
+            w, h = dim
+            if abs(w - h) < 8:
+                continue
+
             if y < self.digit_vertical_pos:
                 continue
             if y > self.digit_vertical_pos + 200:
@@ -79,19 +84,13 @@ class HotWaterMeter(object):
                 continue
             if x > self.digit_pos_max:
                 continue
-            if w < 15:
+            if w < 10:
                 continue
             if h < 15:
                 continue
             if w > 60:
                 continue
             if h > 60:
-                continue
-
-            rect = cv2.minAreaRect(each)
-            pos, dim, angle = rect
-            w, h = dim
-            if abs(w - h) < 8:
                 continue
 
             filtered.append(each)
