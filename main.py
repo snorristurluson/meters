@@ -73,7 +73,7 @@ class HotWaterMeter(object):
             x, y, w, h = bb
             if y < self.digit_vertical_pos:
                 continue
-            if y > self.digit_vertical_pos + 300:
+            if y > self.digit_vertical_pos + 200:
                 continue
             if x < self.digit_pos_min - 60:
                 continue
