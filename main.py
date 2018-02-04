@@ -111,7 +111,7 @@ class HotWaterMeter(object):
             w, h = dim
 
             # Reject nearly square area - like the spinning flow indicator
-            if abs(w - h) < 12:
+            if abs(w - h) < 16:
                 continue
 
             # The digit positions give us a clue to where the dials might be
@@ -129,9 +129,9 @@ class HotWaterMeter(object):
                 continue
             if h < 10:
                 continue
-            if w > 60:
+            if w > 80:
                 continue
-            if h > 60:
+            if h > 80:
                 continue
 
             filtered.append(each)
