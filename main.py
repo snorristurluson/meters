@@ -99,7 +99,8 @@ class HotWaterMeter(object):
         x0 = 32
         y0 = 64
         for each in self.dial_contours:
-            line = cv2.fitLine(each, cv2.DIST_L2, 0, 0.01, 0.01)
+            hull = cv2.convexHull(each)
+            line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
             [vx, vy, x, y] = line
             pt1 = (x0, y0)
             pt2 = (x0 + vx * 24, y0 + vy * 24)
