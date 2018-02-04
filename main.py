@@ -121,10 +121,10 @@ class HotWaterMeter(object):
                         # Image is darker on the top, meaning the
                         # tip of the needle is on top
                         if angle_as_degrees < 0:
-                            angle_as_degrees = -angle_as_degrees
+                            angle_as_degrees += 180
                     else:
                         if angle_as_degrees > 0:
-                            angle_as_degrees = -angle_as_degrees
+                            angle_as_degrees += 180
 
                 self.dial_angles[ix] = angle_as_degrees
                 ix += 1
