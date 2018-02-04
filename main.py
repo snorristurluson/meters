@@ -55,14 +55,18 @@ class HotWaterMeter(object):
 
         if len(self.dial_contours) == 4:
             dial_angles = []
+            bounding_boxes = []
             for each in self.dial_contours:
                 rect = cv2.minAreaRect(each)
                 _, _, angle = rect
                 dial_angles.append(angle)
+                bounding_boxes.append(cv2.boundingRect(each))
 
-            print("Dials: {:.2}  {:.2}  {:.2}  {:.2}".format(
+            print("Dials: {:.4}  {:.4}  {:.4}  {:.4}".format(
                 dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
             ))
+
+            self.dial_images = self.extract_images(bounding_boxes, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
 
@@ -83,6 +87,12 @@ class HotWaterMeter(object):
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
+
+        x = 8
+        for dial in self.dial_images:
+            dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
+            self.output[32:64, x:x + 32] = dial
+            x += 40
 
     def show_dials_ellipses(self):
         for each in self.dial_contours:
@@ -235,6 +245,15 @@ class HotWaterMeter(object):
 
         self.last_known_digit_bounding_boxes = longest_chain
         return longest_chain[:6]
+
+    def extract_images(self, bounding_boxes, size):
+        images = []
+        for bb in bounding_boxes:
+            x, y, w, h = bb
+            img = self.gray[y:y+h, x:x+w].copy()
+            img = cv2.resize(img, size)
+            images.append(img)
+        return images
 
 
 def find_rotation_angle(gray):
