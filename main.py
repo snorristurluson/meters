@@ -194,7 +194,7 @@ class HotWaterMeter(object):
         for angle_in_degrees in self.dial_angles:
             angle = angle_in_degrees*math.pi/180
             pt1 = (x0, y0)
-            pt2 = (x0 + int(math.cos(angle) * 24), int(y0 + math.sin(angle) * 24))
+            pt2 = (x0 + int(math.cos(angle) * 24), int(y0 - math.sin(angle) * 24))
             self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
             x0 += 32
 
