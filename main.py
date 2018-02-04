@@ -102,6 +102,7 @@ class HotWaterMeter(object):
             line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
             [vx, vy, x, y] = line
 
+            self.output = cv2.drawMarker(self.output, (x, y), (0, 255, 0), 2)
             if self.is_dial_inverted(hull):
                 vx *= -1
                 vy *= -1
@@ -118,7 +119,7 @@ class HotWaterMeter(object):
             int(moments['m01'] / moments['m00'])
         )
 
-        self.output = cv2.drawMarker(self.output, (cx, cy), (255, 0, 0))
+        self.output = cv2.drawMarker(self.output, (cx, cy), (255, 0, 0), 2)
 
         rect = cv2.minAreaRect(dial_contours)
         pos, dim, angle = rect
