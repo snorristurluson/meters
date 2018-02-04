@@ -51,7 +51,7 @@ def dials():
 
 
 @app.route('/digits')
-def dials():
+def digits():
     meter = HotWaterMeter()
     meter.background = "digits_threshold"
 
