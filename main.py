@@ -92,7 +92,7 @@ class HotWaterMeter(object):
 
     def show_dials_lines(self):
         for each in self.dial_contours:
-            line = cv2.fitLine(each)
+            line = cv2.fitLine(each, cv2.DIST_L2, 0, 0.01, 0.01)
             print(line)
             #self.output = cv2.line(self.output, line, (0, 0, 255), 2)
 
