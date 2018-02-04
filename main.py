@@ -111,7 +111,7 @@ class HotWaterMeter(object):
             w, h = dim
 
             # Reject nearly square area - like the spinning flow indicator
-            if w > 30 and h > 30 and abs(w - h) < 12:
+            if w > 30 and h > 30:
                 continue
 
             # The digit positions give us a clue to where the dials might be
