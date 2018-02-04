@@ -57,7 +57,7 @@ class HotWaterMeter(object):
             dial_angles = []
             for each in self.dial_contours:
                 rect = cv2.minAreaRect(each)
-                x, y, angle = rect
+                _, _, angle = rect
                 dial_angles.append(angle)
 
             print("Dials: {:.2}  {:.2}  {:.2}  {:.2}".format(
@@ -80,7 +80,6 @@ class HotWaterMeter(object):
     def show_dials(self):
         for each in self.dial_contours:
             rect = cv2.minAreaRect(each)
-            x, y, angle = rect
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
@@ -102,10 +101,27 @@ class HotWaterMeter(object):
             hull = cv2.convexHull(each)
             line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
             [vx, vy, x, y] = line
+
+            if self.is_dial_inverted(each):
+                vx *= -1
+                vy *= -1
+
             pt1 = (x0, y0)
             pt2 = (x0 + vx * 24, y0 + vy * 24)
             self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
             x0 += 32
+
+    def is_dial_inverted(self, dial_contours):
+        moments = cv2.moments(dial_contours)
+        cy = int(moments['m01'] / moments['m00'])
+        aabb = cv2.boundingRect(dial_contours)
+        aax, aay, aaw, aah = aabb
+        center_of_aabb = aay + aah / 2
+        is_inverted = False
+        if cy > center_of_aabb:
+            # Dial is inverted
+            is_inverted = True
+        return is_inverted
 
     def show_dials_contours(self):
         cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
