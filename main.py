@@ -80,13 +80,14 @@ class HotWaterMeter(object):
                 if y + h > cy + ch:
                     ch = y + h - cy
                 self.dial_bounds[ix] = (cx, cy, cw, ch)
+                print(cx, cy, cw, ch)
                 ix += 1
 
             print("Dials: {:.4}  {:.4}  {:.4}  {:.4}".format(
                 dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
             ))
 
-            self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
+            #self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
 
