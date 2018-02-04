@@ -68,7 +68,7 @@ class HotWaterMeter(object):
                 dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
             ))
 
-            self.dial_images = self.extract_images(bounding_boxes, (32, 32))
+            self.dial_images = self.extract_images(self.dials_threshold, bounding_boxes, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
 
@@ -248,11 +248,11 @@ class HotWaterMeter(object):
         self.last_known_digit_bounding_boxes = longest_chain
         return longest_chain[:6]
 
-    def extract_images(self, bounding_boxes, size):
+    def extract_images(self, source, bounding_boxes, size):
         images = []
         for bb in bounding_boxes:
             x, y, w, h = bb
-            img = self.gray[y:y+h, x:x+w].copy()
+            img = source[y:y+h, x:x+w].copy()
             img = cv2.resize(img, size)
             images.append(img)
         return images
