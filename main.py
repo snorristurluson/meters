@@ -111,7 +111,7 @@ class HotWaterMeter(object):
                     bottom = dial[h_2:h, 0:w]
                     top_mean = cv2.mean(top)
                     bottom_mean = cv2.mean(bottom)
-                    if top_mean < right_mean:
+                    if top_mean < bottom_mean:
                         # Image is darker on the top, meaning the
                         # tip of the needle is on top
                         if angle_as_degrees < 0:
