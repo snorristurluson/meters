@@ -118,7 +118,7 @@ class HotWaterMeter(object):
     def show_dials(self):
         x = 8
         for dial in self.dial_images:
-            if dial:
+            if dial is not None:
                 dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
                 h = dial.shape[0]
                 w = dial.shape[1]
