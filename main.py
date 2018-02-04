@@ -49,7 +49,7 @@ class HotWaterMeter(object):
 
 
     def process_digits(self):
-        self.digits_threshold = cv2.medianBlur(self.gray, 5)
+        self.digits_threshold = cv2.medianBlur(self.gray, 3)
         self.digits_threshold = cv2.adaptiveThreshold(
             self.digits_threshold, 255,
             cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV,
@@ -67,7 +67,7 @@ class HotWaterMeter(object):
         for_contours = self.dials_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         self.dial_contours = self.filter_dial_contours(contours)
-
+        self.dial_images = [None, None, None, None]
         if len(self.dial_contours) == 4:
             dial_angles = []
             ix = 0
@@ -118,10 +118,11 @@ class HotWaterMeter(object):
     def show_dials(self):
         x = 8
         for dial in self.dial_images:
-            dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
-            h = dial.shape[0]
-            w = dial.shape[1]
-            self.output[32:32 + h, x:x + w] = dial
+            if dial:
+                dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
+                h = dial.shape[0]
+                w = dial.shape[1]
+                self.output[32:32 + h, x:x + w] = dial
 
             x += 40
 
