@@ -95,7 +95,7 @@ class HotWaterMeter(object):
                 w_2 = int(w/2)
                 h_2 = int(h/2)
                 if w > h:
-                    # Dial is lying sideways
+                    # Dial is horizontal
                     left = dial[0:h, 0:w_2]
                     right = dial[0:h, w_2:w]
                     left_mean = cv2.mean(left)
@@ -103,9 +103,19 @@ class HotWaterMeter(object):
                     if left_mean < right_mean:
                         # Image is darker on the left side, meaning the
                         # tip of the needle is on the left.
-                        print(ix, "left")
-                    else:
-                        print(ix, "right")
+                        if abs(angle_as_degrees) < 90:
+                            angle_as_degrees = -angle_as_degrees
+                else:
+                    # Dial is vertical
+                    top = dial[0:h_2, 0:w]
+                    bottom = dial[h_2:h, 0:w]
+                    top_mean = cv2.mean(top)
+                    bottom_mean = cv2.mean(bottom)
+                    if top_mean < right_mean:
+                        # Image is darker on the top, meaning the
+                        # tip of the needle is on top
+                        if angle_as_degrees < 0:
+                            angle_as_degrees = -angle_as_degrees
 
                 ix += 1
 
