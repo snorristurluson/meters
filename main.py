@@ -5,8 +5,6 @@ import time
 import cv2
 import numpy as np
 
-from digits import extract_digits, find_aligned_bounding_boxes, get_bounding_boxes_for_contours
-
 DIAL_AREA_LEFT_OFFSET = 50
 
 DIAL_AREA_HEIGHT = 180
@@ -25,50 +23,52 @@ class HotWaterMeter(object):
         self.image = cv2.resize(image, (800, 600), interpolation=cv2.INTER_CUBIC)
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         self.gray = cv2.bilateralFilter(self.gray, 5, 150, 150)
-        self.output = cv2.cvtColor(self.gray, cv2.COLOR_GRAY2BGR)
 
         self.process_digits()
         self.process_dials()
+
+        self.output = cv2.cvtColor(self.digit_threshold, cv2.COLOR_GRAY2BGR)
+        self.show_digits()
+        self.show_dials()
 
         return self.output
 
 
     def process_digits(self):
+        self.digit_threshold = cv2.medianBlur(self.gray, 5)
+        self.digit_threshold = cv2.adaptiveThreshold(self.digit_threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3)
 
-        threshold = cv2.medianBlur(self.gray, 5)
-        threshold = cv2.adaptiveThreshold(threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3)
-
-        for_contours = threshold.copy()
+        for_contours = self.digit_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         bounding_boxes = get_bounding_boxes_for_contours(contours)
-        digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
-        digits = extract_digits(digit_bounding_boxes, self.gray)
+        self.digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
+        self.digits = extract_digits(self.digit_bounding_boxes, self.gray)
 
-        for bb in digit_bounding_boxes:
+    def process_dials(self):
+        ret, self.dials_threshold = cv2.threshold(self.gray, 120, 255, cv2.THRESH_BINARY_INV)
+        for_contours = self.dials_threshold.copy()
+        _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
+        self.dial_contours = self.filter_dial_contours(contours)
+
+    def show_digits(self):
+        for bb in self.digit_bounding_boxes:
             pt1 = (bb[0], bb[1])
             pt2 = (bb[0] + bb[2], bb[1] + bb[3])
             self.output = cv2.rectangle(self.output, pt1, pt2, (0, 255, 0))
-
         x = 8
-        for digit in digits:
+        for digit in self.digits:
             digit = cv2.cvtColor(digit, cv2.COLOR_GRAY2BGR)
             self.output[8:24, x:x + 16] = digit
             x += 18
 
-    def process_dials(self):
-        ret, threshold = cv2.threshold(self.gray, 120, 255, cv2.THRESH_BINARY_INV)
-        for_contours = threshold.copy()
-        _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
-        contours = self.filter_dial_contours(contours)
-
-        cv2.drawContours(self.output, contours, -1, (0, 255, 0))
-        for each in contours:
+    def show_dials(self):
+        cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
+        for each in self.dial_contours:
             rect = cv2.minAreaRect(each)
             x, y, angle = rect
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
-
         cv2.line(
             self.output,
             (self.digit_pos_min - DIAL_AREA_LEFT_OFFSET, self.digit_vertical_pos),
@@ -331,3 +331,53 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
+def find_aligned_bounding_boxes(bb, bounding_boxes):
+    result = []
+    x0, y0, w0, h0 = bb
+    center = y0 + h0 / 2
+    for candidate in bounding_boxes:
+        x, y, w, h = candidate
+        if abs(y - y0) < 10:
+            result.append(candidate)
+    result.sort()
+
+    # check for gaps and overlaps
+    final_result = [bb]
+    for candidate in result:
+        x, y, w, h = candidate
+        if x < x0 + w0 + 5:
+            if x > x0 and x + w > x0 + w0:
+                final_result.append(candidate)
+                x0 = x
+                w0 = w
+
+    return final_result
+
+
+def get_bounding_boxes_for_contours(contours):
+    bounding_boxes = []
+    for each in contours:
+        bb = cv2.boundingRect(each)
+        x, y, w, h = bb
+        if w < 15:
+            continue
+        if h < 15:
+            continue
+        if w > 40:
+            continue
+        if h > 60:
+            continue
+        if w > h:
+            continue
+        bounding_boxes.append(bb)
+    return bounding_boxes
+
+
+def extract_digits(digit_bounding_boxes, img):
+    digits = []
+    for bb in digit_bounding_boxes:
+        x, y, w, h = bb
+        digit = img[y:y+h, x:x+w].copy()
+        digit = cv2.resize(digit, (16, 16))
+        digits.append(digit)
+    return digits

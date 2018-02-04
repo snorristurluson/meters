@@ -1,5 +1,7 @@
 import cv2
 
+from main import get_bounding_boxes_for_contours, extract_digits
+
 
 def process_digits(image):
     img = cv2.resize(image, (800, 600), interpolation=cv2.INTER_CUBIC)
@@ -29,53 +31,3 @@ def process_digits(image):
     return contoured
 
 
-def get_bounding_boxes_for_contours(contours):
-    bounding_boxes = []
-    for each in contours:
-        bb = cv2.boundingRect(each)
-        x, y, w, h = bb
-        if w < 15:
-            continue
-        if h < 15:
-            continue
-        if w > 40:
-            continue
-        if h > 60:
-            continue
-        if w > h:
-            continue
-        bounding_boxes.append(bb)
-    return bounding_boxes
-
-
-def extract_digits(digit_bounding_boxes, img):
-    digits = []
-    for bb in digit_bounding_boxes:
-        x, y, w, h = bb
-        digit = img[y:y+h, x:x+w].copy()
-        digit = cv2.resize(digit, (16, 16))
-        digits.append(digit)
-    return digits
-
-
-def find_aligned_bounding_boxes(bb, bounding_boxes):
-    result = []
-    x0, y0, w0, h0 = bb
-    center = y0 + h0 / 2
-    for candidate in bounding_boxes:
-        x, y, w, h = candidate
-        if abs(y - y0) < 10:
-            result.append(candidate)
-    result.sort()
-
-    # check for gaps and overlaps
-    final_result = [bb]
-    for candidate in result:
-        x, y, w, h = candidate
-        if x < x0 + w0 + 5:
-            if x > x0 and x + w > x0 + w0:
-                final_result.append(candidate)
-                x0 = x
-                w0 = w
-
-    return final_result
