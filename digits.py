@@ -72,7 +72,7 @@ def find_aligned_bounding_boxes(bb, bounding_boxes):
     final_result = [bb]
     for candidate in result:
         x, y, w, h = candidate
-        if x < x0 + w0 + 30:
+        if x < x0 + w0 + 5:
             if x > x0 and x + w > x0 + w0:
                 final_result.append(candidate)
                 x0 = x

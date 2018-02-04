@@ -108,6 +108,7 @@ class HotWaterMeter(object):
             if abs(w - h) < 8:
                 continue
 
+            # The digit positions give us a clue to where the dials might be
             if y < self.digit_vertical_pos:
                 continue
             if y > self.digit_vertical_pos + 200:
@@ -116,9 +117,11 @@ class HotWaterMeter(object):
                 continue
             if x > self.digit_pos_max:
                 continue
+
+            # We know the approximate size of the dials
             if w < 10:
                 continue
-            if h < 15:
+            if h < 10:
                 continue
             if w > 60:
                 continue
@@ -136,10 +139,8 @@ class HotWaterMeter(object):
             if len(aligned) > len(longest_chain):
                 longest_chain = aligned
 
-        if len(longest_chain) < 5:
+        if len(longest_chain) != 6:
             return self.last_known_digit_bounding_boxes
-
-        longest_chain = longest_chain[:6]
 
         first_digit = longest_chain[0]
         last_digit = longest_chain[-1]
