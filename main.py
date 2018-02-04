@@ -92,8 +92,18 @@ class HotWaterMeter(object):
 
         x = 8
         for dial in self.dial_images:
+            circles = cv2.HoughCircles(
+                dial,
+                cv2.HOUGH_GRADIENT,
+                1, 20, param1=50, param2=30,
+                minRadius=0, maxRadius=0)
             dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
             self.output[32:64, x:x + 32] = dial
+
+            if circles:
+                for each in circles[0, :]:
+                    cv2.circle(self.output, (each[0], each[1]), 2, (0, 0, 255), 2)
+
             x += 40
 
     def show_dials_ellipses(self):
