@@ -113,15 +113,16 @@ class HotWaterMeter(object):
 
     def is_dial_inverted(self, dial_contours):
         moments = cv2.moments(dial_contours)
-        center_of_mass = (
+        cx, cy = (
             int(moments['m10'] / moments['m00']),
             int(moments['m01'] / moments['m00'])
         )
         rect = cv2.minAreaRect(dial_contours)
         pos, dim, angle = rect
         _, h = dim
+        x, y = pos
 
-        dist = np.linalg.norm(pos - center_of_mass)
+        dist = np.sqrt((cx - x)^2 - (cy - y)^2)
         if dist > h/2:
             return True
         else:
