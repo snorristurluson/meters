@@ -91,10 +91,15 @@ class HotWaterMeter(object):
             self.output = cv2.ellipse(self.output, ellipse, (0, 0, 255), 2)
 
     def show_dials_lines(self):
+        x0 = 32
+        y0 = 64
         for each in self.dial_contours:
             line = cv2.fitLine(each, cv2.DIST_L2, 0, 0.01, 0.01)
-            print(line)
-            #self.output = cv2.line(self.output, line, (0, 0, 255), 2)
+            [vx, vy, x, y] = line
+            pt1 = (x0, y0)
+            pt2 = (x0 + vx * 24, y0 + vy * 24)
+            self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
+            x0 += 32
 
     def show_dials_contours(self):
         cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
