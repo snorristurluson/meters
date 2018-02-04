@@ -135,6 +135,7 @@ class HotWaterMeter(object):
                 continue
 
             filtered.append(each)
+            print(w, h, angle)
 
         return filtered
 
