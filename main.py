@@ -102,7 +102,7 @@ class HotWaterMeter(object):
             line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
             [vx, vy, x, y] = line
 
-            if self.is_dial_inverted(each):
+            if self.is_dial_inverted(hull):
                 vx *= -1
                 vy *= -1
 
