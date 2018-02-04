@@ -37,7 +37,7 @@ class HotWaterMeter(object):
         self.process_dials()
 
         background_image = getattr(self, self.background)
-        self.output = cv2.cvtColor(self.dials_threshold, cv2.COLOR_GRAY2BGR)
+        self.output = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR)
         self.show_digits()
         self.show_dials()
         self.show_dials_boxes()
