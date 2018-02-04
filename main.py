@@ -107,6 +107,9 @@ class HotWaterMeter(object):
                         # tip of the needle is on the left.
                         if abs(angle_as_degrees) < 90:
                             angle_as_degrees = -angle_as_degrees
+                    else:
+                        if abs(angle_as_degrees) > 90:
+                            angle_as_degrees = -angle_as_degrees
                 else:
                     # Dial is vertical
                     top = dial[0:h_2, 0:w]
@@ -119,6 +122,10 @@ class HotWaterMeter(object):
                         # tip of the needle is on top
                         if angle_as_degrees < 0:
                             angle_as_degrees = -angle_as_degrees
+                    else:
+                        if angle_as_degrees > 0:
+                            angle_as_degrees = -angle_as_degrees
+
 
                 ix += 1
 
