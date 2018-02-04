@@ -23,6 +23,7 @@ class HotWaterMeter(object):
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
         self.dial_images = []
+        self.dial_angles = [0, 0, 0, 0]
         self.dial_bounds = [(SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
@@ -70,7 +71,7 @@ class HotWaterMeter(object):
         self.dial_contours = self.filter_dial_contours(contours)
         self.dial_images = [None, None, None, None]
         if len(self.dial_contours) == 4:
-            dial_angles = [0, 0, 0, 0]
+            self.dial_angles = [0, 0, 0, 0]
             ix = 0
             for each in self.dial_contours:
                 rect = cv2.minAreaRect(each)
@@ -90,7 +91,6 @@ class HotWaterMeter(object):
 
                 angle = -math.atan2(vy, vx)
                 angle_as_degrees = angle*180 / math.pi
-                dial_angles[ix] = angle_as_degrees
                 h, w = dial.shape
                 print(ix, w, h)
                 w_2 = int(w/2)
@@ -126,11 +126,11 @@ class HotWaterMeter(object):
                         if angle_as_degrees > 0:
                             angle_as_degrees = -angle_as_degrees
 
-
+                self.dial_angles[ix] = angle_as_degrees
                 ix += 1
 
             print("Dials: {:.4}  {:.4}  {:.4}  {:.4}".format(
-                dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
+                self.dial_angles[0], self.dial_angles[1], self.dial_angles[2], self.dial_angles[3]
             ))
 
             # self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
@@ -191,13 +191,10 @@ class HotWaterMeter(object):
     def show_dials_lines(self):
         x0 = 32
         y0 = 64
-        for each in self.dial_contours:
-            hull = cv2.convexHull(each)
-            line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
-            [vx, vy, x, y] = line
-
+        for angle_in_degrees in self.dial_angles:
+            angle = angle_in_degrees*math.pi/180
             pt1 = (x0, y0)
-            pt2 = (x0 + vx * 24, y0 + vy * 24)
+            pt2 = (x0 + math.cos(angle) * 24, y0 + math.sin(angle) * 24)
             self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
             x0 += 32
 
