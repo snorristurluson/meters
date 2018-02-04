@@ -100,6 +100,7 @@ class HotWaterMeter(object):
                     right = dial[0:h, w_2:w]
                     left_mean = cv2.mean(left)[0]
                     right_mean = cv2.mean(right)[0]
+                    print(left_mean, right_mean)
                     if left_mean < right_mean:
                         # Image is darker on the left side, meaning the
                         # tip of the needle is on the left.
@@ -111,6 +112,7 @@ class HotWaterMeter(object):
                     bottom = dial[h_2:h, 0:w]
                     top_mean = cv2.mean(top)[0]
                     bottom_mean = cv2.mean(bottom)[0]
+                    print(top_mean, bottom_mean)
                     if top_mean < bottom_mean:
                         # Image is darker on the top, meaning the
                         # tip of the needle is on top
