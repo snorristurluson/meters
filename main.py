@@ -5,6 +5,9 @@ import time
 import cv2
 import numpy as np
 
+SOURCE_IMAGE_WIDTH = 800
+SOURCE_IMAGE_HEIGHT = 600
+
 DIAL_AREA_LEFT_OFFSET = 50
 DIAL_AREA_TOP_OFFSET = 50
 DIAL_AREA_HEIGHT = 180
@@ -13,15 +16,16 @@ DIAL_AREA_HEIGHT = 180
 class HotWaterMeter(object):
     def __init__(self):
         self.image = None
-        self.digit_pos_min = 800
+        self.background = "dials_threshold"
+        self.digit_pos_min = SOURCE_IMAGE_WIDTH
         self.digit_pos_max = 0
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
         self.dial_images = []
-        self.dial_bounds = [(800, 600, 0, 0),
-                            (800, 600, 0, 0),
-                            (800, 600, 0, 0),
-                            (800, 600, 0, 0)]
+        self.dial_bounds = [(SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
+                            (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
+                            (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
+                            (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0)]
 
 
     def process_image(self, image):
@@ -32,6 +36,7 @@ class HotWaterMeter(object):
         self.process_digits()
         self.process_dials()
 
+        background_image = getattr(self, self.background)
         self.output = cv2.cvtColor(self.dials_threshold, cv2.COLOR_GRAY2BGR)
         self.show_digits()
         self.show_dials()
@@ -44,10 +49,10 @@ class HotWaterMeter(object):
 
 
     def process_digits(self):
-        self.digit_threshold = cv2.medianBlur(self.gray, 5)
-        self.digit_threshold = cv2.adaptiveThreshold(self.digit_threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3)
+        self.digits_threshold = cv2.medianBlur(self.gray, 5)
+        self.digits_threshold = cv2.adaptiveThreshold(self.digits_threshold, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3)
 
-        for_contours = self.digit_threshold.copy()
+        for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         bounding_boxes = get_bounding_boxes_for_contours(contours)
         self.digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)

@@ -42,6 +42,18 @@ def gen(camera):
 @app.route('/dials')
 def dials():
     meter = HotWaterMeter()
+    meter.background = "dials_threshold"
+
+    camera = VideoCamera(meter.process_image)
+
+    return Response(gen(camera),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@app.route('/digits')
+def dials():
+    meter = HotWaterMeter()
+    meter.background = "digits_threshold"
 
     camera = VideoCamera(meter.process_image)
 
