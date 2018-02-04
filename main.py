@@ -46,7 +46,7 @@ class HotWaterMeter(object):
 
     def process_dials(self):
         b, g, r = cv2.split(self.image)
-        ret, self.dials_threshold = cv2.threshold(g, 120, 255, cv2.THRESH_BINARY_INV)
+        ret, self.dials_threshold = cv2.threshold(g, 120, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         for_contours = self.dials_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         self.dial_contours = self.filter_dial_contours(contours)
