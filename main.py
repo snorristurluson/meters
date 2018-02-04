@@ -35,6 +35,7 @@ class HotWaterMeter(object):
         self.output = cv2.cvtColor(self.dials_threshold, cv2.COLOR_GRAY2BGR)
         self.show_digits()
         self.show_dials()
+        self.show_dials_boxes()
         self.show_dials_contours()
         self.show_dials_hulls()
         self.show_dials_lines()
@@ -103,32 +104,15 @@ class HotWaterMeter(object):
             x += 18
 
     def show_dials(self):
-        for each in self.dial_contours:
-            rect = cv2.minAreaRect(each)
-            box = cv2.boxPoints(rect)
-            box = np.int0(box)
-            self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
-
         x = 8
         for dial in self.dial_images:
-            circles = cv2.HoughCircles(
-                dial,
-                cv2.HOUGH_GRADIENT,
-                1, 20, param1=50, param2=30,
-                minRadius=0, maxRadius=0)
-
-            dial_as_float = np.float32(dial)
-            corners = cv2.cornerHarris(dial_as_float, 2, 3, 0.04)
-            corners = cv2.dilate(corners, None)
             dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
-            dial[corners>0.01*corners.max()] = [0, 0, 255]
             self.output[32:64, x:x + 32] = dial
 
-            if circles:
-                for each in circles[0, :]:
-                    cv2.circle(self.output, (each[0], each[1]), 2, (0, 0, 255), 2)
-
             x += 40
+
+    def show_dials_boxes(self):
+        self.output = cv2.drawContours(self.output, self.dial_bounds, 0, (0, 0, 255), 2)
 
     def show_dials_ellipses(self):
         for each in self.dial_contours:
@@ -147,11 +131,6 @@ class HotWaterMeter(object):
             hull = cv2.convexHull(each)
             line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
             [vx, vy, x, y] = line
-
-            self.output = cv2.drawMarker(self.output, (x, y), (0, 255, 0), 2)
-            if self.is_dial_inverted(hull):
-                vx *= -1
-                vy *= -1
 
             pt1 = (x0, y0)
             pt2 = (x0 + vx * 24, y0 + vy * 24)
