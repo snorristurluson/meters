@@ -114,13 +114,7 @@ class HotWaterMeter(object):
     def show_dials_boxes(self):
         for each in self.dial_bounds:
             x, y, w, h = each
-            verts = [
-                (x, y),
-                (x + w, y),
-                (x + w, y + h),
-                (x, y + h)
-            ]
-            self.output = cv2.drawContours(self.output, [verts], 0, (0, 0, 255), 2)
+            self.output = cv2.rectangle(self.output, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
     def show_dials_ellipses(self):
         for each in self.dial_contours:
