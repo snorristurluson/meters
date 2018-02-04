@@ -17,6 +17,7 @@ class HotWaterMeter(object):
         self.digit_pos_max = 0
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
+        self.dial_images = []
 
 
     def process_image(self, image):
