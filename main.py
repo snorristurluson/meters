@@ -148,7 +148,6 @@ class HotWaterMeter(object):
                 continue
 
             filtered.append(each)
-            print(w, h, angle)
 
         filtered.sort()
         return filtered
