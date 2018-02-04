@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 DIAL_AREA_LEFT_OFFSET = 50
-
+DIAL_AREA_TOP_OFFSET = 50
 DIAL_AREA_HEIGHT = 180
 
 
@@ -193,7 +193,7 @@ class HotWaterMeter(object):
                 continue
 
             # The digit positions give us a clue to where the dials might be
-            if aay < self.digit_vertical_pos:
+            if aay < self.digit_vertical_pos + DIAL_AREA_TOP_OFFSET:
                 continue
             if aay > self.digit_vertical_pos + DIAL_AREA_HEIGHT:
                 continue
