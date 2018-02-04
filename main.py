@@ -102,23 +102,26 @@ class HotWaterMeter(object):
     def filter_dial_contours(self, contours):
         filtered = []
         for each in contours:
+            aabb = cv2.boundingRect(each)
+            aax, aay, _, _ = aabb
+
             rect = cv2.minAreaRect(each)
             pos, dim, angle = rect
             x, y = pos
             w, h = dim
 
             # Reject nearly square area - like the spinning flow indicator
-            if abs(w - h) < 16:
+            if abs(w - h) < 12:
                 continue
 
             # The digit positions give us a clue to where the dials might be
-            if y < self.digit_vertical_pos:
+            if aay < self.digit_vertical_pos:
                 continue
-            if y > self.digit_vertical_pos + DIAL_AREA_HEIGHT:
+            if aay > self.digit_vertical_pos + DIAL_AREA_HEIGHT:
                 continue
-            if x < self.digit_pos_min - DIAL_AREA_LEFT_OFFSET:
+            if aax < self.digit_pos_min - DIAL_AREA_LEFT_OFFSET:
                 continue
-            if x > self.digit_pos_max:
+            if aax > self.digit_pos_max:
                 continue
 
             # We know the approximate size of the dials
