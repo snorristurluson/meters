@@ -149,7 +149,7 @@ class HotWaterMeter(object):
 
             filtered.append(each)
 
-        filtered.sort()
+        filtered.sort(key=lambda x: cv2.boundingRect(x)[0])
         return filtered
 
     def find_digit_bounding_boxes(self, bounding_boxes):
