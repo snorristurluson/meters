@@ -63,7 +63,7 @@ class HotWaterMeter(object):
 
     def process_dials(self):
         b, g, r = cv2.split(self.image)
-        ret, self.dials_threshold = cv2.threshold(g, 120, 255, cv2.THRESH_BINARY_INV)
+        ret, self.dials_threshold = cv2.threshold(g, 70, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.dials_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         self.dial_contours = self.filter_dial_contours(contours)
@@ -89,6 +89,10 @@ class HotWaterMeter(object):
                 if y + h > cy + ch:
                     ch = y + h - cy
                 self.dial_bounds[ix] = (cx, cy, cw, ch)
+                self.dial_images[ix] = self.extract_rotated_image(
+                    self.dials_threshold,
+                    rect
+                )
                 print(cx, cy, cw, ch)
                 ix += 1
 
@@ -96,7 +100,7 @@ class HotWaterMeter(object):
                 dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
             ))
 
-            self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
+            # self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
 
@@ -115,7 +119,9 @@ class HotWaterMeter(object):
         x = 8
         for dial in self.dial_images:
             dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
-            self.output[32:64, x:x + 32] = dial
+            h = dial.shape[0]
+            w = dial.shape[1]
+            self.output[32:32 + h, x:x + w] = dial
 
             x += 40
 
@@ -282,6 +288,42 @@ class HotWaterMeter(object):
             img = cv2.resize(img, size)
             images.append(img)
         return images
+
+    def extract_rotated_image(self, source, rect):
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+
+        W = rect[1][0]
+        H = rect[1][1]
+
+        Xs = [i[0] for i in box]
+        Ys = [i[1] for i in box]
+        x1 = min(Xs)
+        x2 = max(Xs)
+        y1 = min(Ys)
+        y2 = max(Ys)
+
+        rotated = False
+        angle = rect[2]
+
+        if angle < -45:
+            angle += 90
+            rotated = True
+
+        center = (int((x1 + x2) / 2), int((y1 + y2) / 2))
+        size = (int(x2 - x1), int(y2 - y1))
+
+        M = cv2.getRotationMatrix2D((size[0] / 2, size[1] / 2), angle, 1.0)
+
+        cropped = cv2.getRectSubPix(source, size, center)
+        cropped = cv2.warpAffine(cropped, M, size)
+
+        croppedW = W if not rotated else H
+        croppedH = H if not rotated else W
+
+        cropped_rotated = cv2.getRectSubPix(cropped, (int(croppedW ), int(croppedH)),
+                                           (size[0] / 2, size[1] / 2))
+        return cropped_rotated
 
 
 def find_rotation_angle(gray):
