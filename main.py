@@ -116,7 +116,12 @@ class HotWaterMeter(object):
                 cv2.HOUGH_GRADIENT,
                 1, 20, param1=50, param2=30,
                 minRadius=0, maxRadius=0)
+
+            dial_as_float = np.float32(dial)
+            corners = cv2.cornerHarris(dial_as_float, 2, 3, 0.04)
+            corners = cv2.dilate(corners, None)
             dial = cv2.cvtColor(dial, cv2.COLOR_GRAY2BGR)
+            dial[corners>0.01*corners.max()] = [0, 0, 255]
             self.output[32:64, x:x + 32] = dial
 
             if circles:
