@@ -18,6 +18,10 @@ class HotWaterMeter(object):
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
         self.dial_images = []
+        self.dial_bounds = [((800, 600), (0, 0)),
+                            ((800, 600), (0, 0)),
+                            ((800, 600), (0, 0)),
+                            ((800, 600), (0, 0))]
 
 
     def process_image(self, image):
@@ -58,17 +62,35 @@ class HotWaterMeter(object):
         if len(self.dial_contours) == 4:
             dial_angles = []
             bounding_boxes = []
+            ix = 0
             for each in self.dial_contours:
                 rect = cv2.minAreaRect(each)
-                _, _, angle = rect
+                pos, dim, angle = rect
                 dial_angles.append(angle)
                 bounding_boxes.append(cv2.boundingRect(each))
+
+                current_bounds = self.dial_bounds[ix]
+                cpos, cdim = current_bounds
+                cx, cy = cpos
+                x, y = pos
+                if cx < x:
+                    cx = x
+                if cy < y:
+                    cy = y
+                cw, ch = cdim
+                w, h = dim
+                if x + w > cx + cw:
+                    cw = x + w - cx
+                if y + h > cy + ch:
+                    ch = y + h - cy
+                self.dial_bounds[ix] = ((cx, cy), (cw, ch))
+                ix += 1
 
             print("Dials: {:.4}  {:.4}  {:.4}  {:.4}".format(
                 dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
             ))
 
-            self.dial_images = self.extract_images(self.dials_threshold, bounding_boxes, (32, 32))
+            self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
 
