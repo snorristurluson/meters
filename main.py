@@ -1,6 +1,7 @@
 import argparse
 import sys
 import time
+import math
 
 import cv2
 import numpy as np
@@ -69,31 +70,41 @@ class HotWaterMeter(object):
         self.dial_contours = self.filter_dial_contours(contours)
         self.dial_images = [None, None, None, None]
         if len(self.dial_contours) == 4:
-            dial_angles = []
+            dial_angles = [0, 0, 0, 0]
             ix = 0
             for each in self.dial_contours:
                 rect = cv2.minAreaRect(each)
-                pos, dim, angle = rect
-                dial_angles.append(angle)
                 bb = cv2.boundingRect(each)
 
-                current_bounds = self.dial_bounds[ix]
-                cx, cy, cw, ch = current_bounds
-                x, y, w, h = bb
-                if x < cx:
-                    cx = x
-                if y < cy:
-                    cy = y
-                if x + w > cx + cw:
-                    cw = x + w - cx
-                if y + h > cy + ch:
-                    ch = y + h - cy
-                self.dial_bounds[ix] = (cx, cy, cw, ch)
-                self.dial_images[ix] = self.extract_rotated_image(
+                self.accumulate_dial_bounds(bb, ix)
+
+                dial = self.extract_rotated_image(
                     self.dials_threshold,
                     rect
                 )
-                print(cx, cy, cw, ch)
+                self.dial_images[ix] = dial
+
+                hull = cv2.convexHull(each)
+                line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
+                [vx, vy, x, y] = line
+
+                angle = math.atan2(vx, vy)
+                angle_as_degrees = angle*180 / math.pi
+                dial_angles[ix] = angle_as_degrees
+                w, h = dial.shape
+                if w > h:
+                    # Dial is lying sideways
+                    left = dial[0:h, 0:w/2]
+                    right = dial[0:h, w/2:w]
+                    left_mean = cv2.mean(left)
+                    right_mean = cv2.mean(right)
+                    if left_mean < right_mean:
+                        # Image is darker on the left side, meaning the
+                        # tip of the needle is on the left.
+                        print(ix, "left")
+                    else:
+                        print(ix, "right")
+
                 ix += 1
 
             print("Dials: {:.4}  {:.4}  {:.4}  {:.4}".format(
@@ -103,6 +114,20 @@ class HotWaterMeter(object):
             # self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
+
+    def accumulate_dial_bounds(self, bb, ix):
+        current_bounds = self.dial_bounds[ix]
+        cx, cy, cw, ch = current_bounds
+        x, y, w, h = bb
+        if x < cx:
+            cx = x
+        if y < cy:
+            cy = y
+        if x + w > cx + cw:
+            cw = x + w - cx
+        if y + h > cy + ch:
+            ch = y + h - cy
+        self.dial_bounds[ix] = (cx, cy, cw, ch)
 
     def show_digits(self):
         for bb in self.digit_bounding_boxes:
