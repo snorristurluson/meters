@@ -177,7 +177,7 @@ class HotWaterMeter(object):
             [vx, vy, x, y] = line
 
             pt1 = (x0, y0)
-            pt2 = (x0 + vx * 24, y0 + vy * 24)
+            pt2 = (x0 + vx * 24, y0 - vy * 24)
             self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
             x0 += 32
 
