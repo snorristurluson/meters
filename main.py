@@ -51,6 +51,19 @@ class HotWaterMeter(object):
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         self.dial_contours = self.filter_dial_contours(contours)
 
+        if len(self.dial_contours) == 4:
+            dial_angles = []
+            for each in self.dial_contours:
+                rect = cv2.minAreaRect(each)
+                x, y, angle = rect
+                dial_angles.append(angle)
+
+            print("Dials: {:.2}  {:.2}  {:.2}  {:.2}".format(
+                dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
+            ))
+        else:
+            print("Incorrect number of dials detected, skipping")
+
     def show_digits(self):
         for bb in self.digit_bounding_boxes:
             pt1 = (bb[0], bb[1])
@@ -137,6 +150,7 @@ class HotWaterMeter(object):
             filtered.append(each)
             print(w, h, angle)
 
+        filtered.sort()
         return filtered
 
     def find_digit_bounding_boxes(self, bounding_boxes):
