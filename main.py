@@ -91,7 +91,7 @@ class HotWaterMeter(object):
                 angle = -math.atan2(vy, vx)
                 angle_as_degrees = angle*180 / math.pi
                 dial_angles[ix] = angle_as_degrees
-                w, h = dial.shape
+                h, w, _ = dial.shape
                 w_2 = int(w/2)
                 h_2 = int(h/2)
                 if w > h:
