@@ -93,7 +93,7 @@ class HotWaterMeter(object):
     def show_dials_hulls(self):
         for each in self.dial_contours:
             hull = cv2.convexHull(each)
-            self.output = cv2.drawContours(self.output, [hull], -1, (0, 0, 255))
+            self.output = cv2.drawContours(self.output, [hull], -1, (0, 0, 255), 2)
 
     def show_dials_lines(self):
         x0 = 32
