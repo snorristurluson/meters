@@ -88,7 +88,7 @@ class HotWaterMeter(object):
                 line = cv2.fitLine(hull, cv2.DIST_L2, 0, 0.01, 0.01)
                 [vx, vy, x, y] = line
 
-                angle = math.atan2(vx, vy)
+                angle = math.atan2(vy, vx)
                 angle_as_degrees = angle*180 / math.pi
                 dial_angles[ix] = angle_as_degrees
                 w, h = dial.shape
