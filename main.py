@@ -92,10 +92,12 @@ class HotWaterMeter(object):
                 angle_as_degrees = angle*180 / math.pi
                 dial_angles[ix] = angle_as_degrees
                 w, h = dial.shape
+                w_2 = int(w/2)
+                h_2 = int(h/2)
                 if w > h:
                     # Dial is lying sideways
-                    left = dial[0:h, 0:w/2]
-                    right = dial[0:h, w/2:w]
+                    left = dial[0:h, 0:w_2]
+                    right = dial[0:h, w_2:w]
                     left_mean = cv2.mean(left)
                     right_mean = cv2.mean(right)
                     if left_mean < right_mean:
