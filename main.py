@@ -61,7 +61,6 @@ class HotWaterMeter(object):
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         contours = self.filter_dial_contours(contours)
 
-        self.output = cv2.cvtColor(threshold, cv2.COLOR_GRAY2BGR)
         cv2.drawContours(self.output, contours, -1, (0, 255, 0))
         for each in contours:
             rect = cv2.minAreaRect(each)
