@@ -247,8 +247,11 @@ class HotWaterMeter(object):
             if len(aligned) > len(longest_chain):
                 longest_chain = aligned
 
-        if len(longest_chain) != 6:
+        if len(longest_chain) < 5:
             return self.last_known_digit_bounding_boxes
+
+        if len(longest_chain) > 5:
+            longest_chain = longest_chain[:5]
 
         first_digit = longest_chain[0]
         last_digit = longest_chain[-1]
@@ -269,7 +272,7 @@ class HotWaterMeter(object):
             print("Y:", self.digit_vertical_pos)
 
         self.last_known_digit_bounding_boxes = longest_chain
-        return longest_chain[:6]
+        return longest_chain[:5]
 
     def extract_images(self, source, bounding_boxes, size):
         images = []
