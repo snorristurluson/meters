@@ -122,7 +122,7 @@ class HotWaterMeter(object):
         _, h = dim
         x, y = pos
 
-        dist = np.sqrt((cx - x)^2 - (cy - y)^2)
+        dist = np.sqrt((cx - x)**2 - (cy - y)**2)
         if dist > h/2:
             return True
         else:
