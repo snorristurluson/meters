@@ -29,7 +29,7 @@ class HotWaterMeter(object):
 
         self.output = cv2.cvtColor(self.dials_threshold, cv2.COLOR_GRAY2BGR)
         self.show_digits()
-        self.show_dials()
+        self.show_dials_ellipses()
 
         return self.output
 
@@ -83,6 +83,14 @@ class HotWaterMeter(object):
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             self.output = cv2.drawContours(self.output, [box], 0, (0, 0, 255), 2)
+
+    def show_dials_ellipses(self):
+        cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
+        for each in self.dial_contours:
+            ellipse = cv2.fitEllipse(each)
+            self.output = cv2.ellipse(self.output, ellipse, (0, 0, 255), 2)
+
+    def show_dials_area(self):
         cv2.line(
             self.output,
             (self.digit_pos_min - DIAL_AREA_LEFT_OFFSET, self.digit_vertical_pos),
