@@ -87,7 +87,7 @@ class HotWaterMeter(object):
                 dial_angles[0], dial_angles[1], dial_angles[2], dial_angles[3]
             ))
 
-            #self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
+            self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
         else:
             print("Incorrect number of dials detected, skipping")
 
