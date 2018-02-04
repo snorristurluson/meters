@@ -71,9 +71,9 @@ class HotWaterMeter(object):
                 current_bounds = self.dial_bounds[ix]
                 cx, cy, cw, ch = current_bounds
                 x, y, w, h = bb
-                if cx < x:
+                if x < cx:
                     cx = x
-                if cy < y:
+                if y < cy:
                     cy = y
                 if x + w > cx + cw:
                     cw = x + w - cx
