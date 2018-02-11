@@ -172,7 +172,7 @@ class HotWaterMeter(object):
                             angle_as_degrees += 180
 
                 # The 0 point is at the top, at 90 degrees from the origin
-                angle_as_degrees += 90
+                angle_as_degrees -= 90
 
                 # Angle is positive in the anti-clockwise direction,
                 # but the dial value goes clockwise
