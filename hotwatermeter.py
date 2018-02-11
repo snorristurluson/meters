@@ -65,7 +65,7 @@ class HotWaterMeter(object):
             cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV,
             5, 4)
 
-        ret, self.digits_threshold = cv2.threshold(g, 70, 255, cv2.THRESH_BINARY_INV)
+        ret, self.digits_threshold = cv2.threshold(self.gray, 70, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         bounding_boxes = self.filter_digit_contours(contours)
