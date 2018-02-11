@@ -59,7 +59,7 @@ class HotWaterMeter(object):
         self.show_digit_contours()
         self.show_dials_hulls()
         self.show_dials_lines()
-        self.show.dials_area()
+        self.show_dials_area()
 
         return self.output
 
