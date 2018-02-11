@@ -48,11 +48,15 @@ class HotWaterMeter(object):
         roi_height = int(h / 3)
         roi = image[y0:y0 + roi_height, x0:x0 + roi_width]
 
-        #self.image = cv2.resize(roi, (800, 600), interpolation=cv2.INTER_CUBIC)
         self.image = roi
         _, g, _ = cv2.split(self.image)
         self.gray = g
-        self.gray = cv2.bilateralFilter(self.gray, 5, 200, 200)
+        bilateral_filter_diameter = self.settings.get("bilateral_filter_diameter", 5)
+        bilateral_filter_sigma = self.settings.get("bilateral_filter_sigma", 5)
+        self.gray = cv2.bilateralFilter(
+            self.gray,
+            bilateral_filter_diameter,
+            bilateral_filter_sigma, bilateral_filter_sigma)
 
         self.process_digits()
         self.process_dials()
@@ -104,7 +108,13 @@ class HotWaterMeter(object):
         threshold = self.settings.get("dials_threshold_value", 70)
         ret, self.dials_threshold = cv2.threshold(self.gray, threshold, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.dials_threshold.copy()
-        _, contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        dial_contour_method = self.settings.get(
+            "dial_contour_method", cv2.RETR_TREE)
+        _, contours, _ = cv2.findContours(
+            for_contours,
+            dial_contour_method,
+            cv2.CHAIN_APPROX_SIMPLE)
         self.dial_contours = self.filter_dial_contours(contours)
         self.dial_images = [None, None, None, None]
         if len(self.dial_contours) == 4:
