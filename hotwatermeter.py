@@ -288,6 +288,10 @@ class HotWaterMeter(object):
         dial_area_left_offset = self.settings.get("dial_area_left_offset", 40)
         dial_area_right_offset = self.settings.get("dial_area_right_offset", 40)
 
+        flow_indicator_size = self.settings.get("flow_indicator_size", 20)
+        dial_min_size = self.settings.get("dial_min_size", 10)
+        dial_max_size = self.settings.get("dial_max_size", 60)
+
         for each in contours:
             aabb = cv2.boundingRect(each)
             aax, aay, _, _ = aabb
@@ -297,7 +301,7 @@ class HotWaterMeter(object):
             w, h = dim
 
             # Reject nearly square area - like the spinning flow indicator
-            if w > 30 and h > 30:
+            if w > flow_indicator_size and h > flow_indicator_size:
                 continue
 
             # The digit positions give us a clue to where the dials might be
@@ -311,13 +315,13 @@ class HotWaterMeter(object):
                 continue
 
             # We know the approximate size of the dials
-            if w < 10:
+            if w < dial_min_size:
                 continue
-            if h < 10:
+            if h < dial_min_size:
                 continue
-            if w > 80:
+            if w > dial_max_size:
                 continue
-            if h > 80:
+            if h > dial_max_size:
                 continue
 
             filtered.append(each)
