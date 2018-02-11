@@ -33,7 +33,7 @@ class HotWaterMeter(object):
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0)]
 
     def process_image(self, image):
-        w, h, _ = image.shape
+        h, w, _ = image.shape
         x0 = int(w / 3)
         y0 = int(h / 2)
         roi_width = int(w / 3)
