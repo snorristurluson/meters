@@ -59,6 +59,7 @@ class HotWaterMeter(object):
         self.show_digit_contours()
         self.show_dials_hulls()
         self.show_dials_lines()
+        self.show.dials_area()
 
         return self.output
 
@@ -234,7 +235,7 @@ class HotWaterMeter(object):
         cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
 
     def show_digit_contours(self):
-        cv2.drawContours(self.output, self.digit_contours, -1, (0, 255, 0))
+        cv2.drawContours(self.output, self.digit_contours, -1, (255, 0, 0))
 
     def show_dials_area(self):
         cv2.line(
@@ -416,13 +417,13 @@ class HotWaterMeter(object):
         for each in contours:
             bb = cv2.boundingRect(each)
             x, y, w, h = bb
-            if w < 40:
+            if w < 30:
                 continue
-            if h < 40:
+            if h < 30:
                 continue
-            if w > 120:
+            if w > 80:
                 continue
-            if h > 120:
+            if h > 80:
                 continue
             if w > h:
                 continue
