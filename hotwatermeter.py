@@ -174,7 +174,7 @@ class HotWaterMeter(object):
                         if angle_as_degrees > 0:
                             angle_as_degrees += 180
 
-                self.dial_values[ix] = int(angle_as_degrees / 36)
+                self.dial_values[ix] = int(angle_as_degrees / 36.0)
                 self.dial_angles[ix] = angle_as_degrees
                 ix += 1
 
