@@ -296,6 +296,11 @@ class HotWaterMeter(object):
 
     def filter_dial_contours(self, contours):
         filtered = []
+
+        dial_area_top_offset = self.settings.get("dial_area_top_offset", 20)
+        dial_area_height = self.settings.get("dial_area_height", 80)
+        dial_area_left_offset = self.settings.get("dial_area_left_offset", 40)
+
         for each in contours:
             aabb = cv2.boundingRect(each)
             aax, aay, _, _ = aabb
@@ -309,11 +314,11 @@ class HotWaterMeter(object):
                 continue
 
             # The digit positions give us a clue to where the dials might be
-            if aay < self.digit_vertical_pos + DIAL_AREA_TOP_OFFSET:
+            if aay < self.digit_vertical_pos + dial_area_top_offset:
                 continue
-            if aay > self.digit_vertical_pos + DIAL_AREA_HEIGHT:
+            if aay > self.digit_vertical_pos + dial_area_height:
                 continue
-            if aax < self.digit_pos_min - DIAL_AREA_LEFT_OFFSET:
+            if aax < self.digit_pos_min - dial_area_left_offset:
                 continue
             if aax > self.digit_pos_max:
                 continue
