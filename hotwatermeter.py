@@ -68,7 +68,7 @@ class HotWaterMeter(object):
         background = self.settings.get("background", "gray")
         background_image = getattr(self, background)
         if len(background_image.shape) > 2:
-            self.output = background_image
+            self.output = background_image.copy()
         else:
             self.output = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR)
 
@@ -97,11 +97,14 @@ class HotWaterMeter(object):
             if self.last_save_time + save_interval < now:
                 timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime(now))
                 cv2.imwrite("images/image_%s.jpg" % timestamp, self.image)
+                cv2.imwrite("images/output_%s.jpg" % timestamp, self.output)
 
                 i = 0
                 for digit in self.digits:
                     cv2.imwrite("images/digit_%s_%s.png" % (i, timestamp), digit)
                     i += 1
+
+                self.last_save_time = now
 
         return self.output
 
