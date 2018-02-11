@@ -270,38 +270,15 @@ class HotWaterMeter(object):
         dial_area_left_offset = self.settings.get("dial_area_left_offset", 40)
         dial_area_right_offset = self.settings.get("dial_area_right_offset", 40)
 
-        cv2.line(
-            self.output,
-            (self.digit_pos_min - dial_area_left_offset, self.digit_vertical_pos),
-            (self.digit_pos_max, self.digit_vertical_pos),
-            (0, 0, 255),
-            2
-        )
-        cv2.line(
-            self.output,
-            (self.digit_pos_min - dial_area_left_offset, self.digit_vertical_pos + dial_area_height),
-            (self.digit_pos_max, self.digit_vertical_pos + dial_area_height),
-            (0, 0, 255),
-            2
-        )
-        cv2.line(
-            self.output,
-            (self.digit_pos_min - dial_area_left_offset,
-             self.digit_vertical_pos + dial_area_top_offset),
-            (self.digit_pos_min - dial_area_left_offset,
-             self.digit_vertical_pos + dial_area_top_offset + dial_area_height),
-            (0, 0, 255),
-            2
-        )
-        cv2.line(
-            self.output,
-            (self.digit_pos_max + dial_area_right_offset,
-             self.digit_vertical_pos + dial_area_top_offset),
-            (self.digit_pos_max + dial_area_right_offset,
-             self.digit_vertical_pos + dial_area_top_offset + dial_area_height),
-            (0, 0, 255),
-            2
-        )
+        x0 = self.digit_pos_min - dial_area_left_offset
+        y0 = self.digit_vertical_pos + dial_area_top_offset
+        x1 = self.digit_pos_max + dial_area_right_offset
+        y1 = self.digit_vertical_pos + dial_area_top_offset + dial_area_height
+
+        cv2.line(self.output, (x0, y0), (x1, y0), (0, 0, 255), 2)
+        cv2.line(self.output, (x0, y1), (x1, y1), (0, 0, 255), 2)
+        cv2.line(self.output, (x0, y0), (x0, y1), (0, 0, 255), 2)
+        cv2.line(self.output, (x1, y0), (x1, y1), (0, 0, 255), 2)
 
     def filter_dial_contours(self, contours):
         filtered = []
