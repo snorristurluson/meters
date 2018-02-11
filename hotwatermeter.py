@@ -425,7 +425,7 @@ class HotWaterMeter(object):
                 continue
             if w > h:
                 continue
-                filtered.append(each)
+            filtered.append(each)
         return filtered
 
 
