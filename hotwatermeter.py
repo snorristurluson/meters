@@ -3,6 +3,7 @@ import math
 
 import cv2
 import numpy as np
+import time
 
 SOURCE_IMAGE_WIDTH = 800
 SOURCE_IMAGE_HEIGHT = 600
@@ -35,6 +36,8 @@ class HotWaterMeter(object):
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0)]
+
+        self.last_save_time = time.time()
 
     def process_image(self, image):
         try:
@@ -87,6 +90,18 @@ class HotWaterMeter(object):
             self.show_dials_lines()
         if self.settings.get("show_dials_area", False):
             self.show_dials_area()
+
+        save_interval = self.settings.get("save_interval", 0)
+        if save_interval > 0:
+            now = time.time()
+            if self.last_save_time + save_interval < now:
+                timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime(now))
+                cv2.imwrite("images/image_%s.jpg" % timestamp, self.image)
+
+                i = 0
+                for digit in self.digits:
+                    cv2.imwrite("images/digit_%s_%s.png" % (i, timestamp), digit)
+                    i += 1
 
         return self.output
 
