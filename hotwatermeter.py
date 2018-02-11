@@ -21,6 +21,7 @@ class HotWaterMeter(object):
         self.digits = []
         self.digit_pos_min = SOURCE_IMAGE_WIDTH
         self.digit_pos_max = 0
+        self.digit_contours = []
         self.digit_bounding_boxes = []
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
@@ -53,6 +54,7 @@ class HotWaterMeter(object):
         self.show_dials()
         self.show_dials_boxes()
         self.show_dials_contours()
+        self.show_digit_contours()
         self.show_dials_hulls()
         self.show_dials_lines()
 
@@ -68,10 +70,9 @@ class HotWaterMeter(object):
         ret, self.digits_threshold = cv2.threshold(self.gray, 45, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        bounding_boxes = self.filter_digit_contours(contours)
-        #self.digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
+        self.digit_contours = self.filter_digit_contours(contours)
+        self.digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
         #self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
-        self.digit_bounding_boxes = bounding_boxes
 
     def process_dials(self):
         b, g, r = cv2.split(self.image)
@@ -231,6 +232,9 @@ class HotWaterMeter(object):
     def show_dials_contours(self):
         cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
 
+    def show_digit_contours(self):
+        cv2.drawContours(self.output, self.digit_contours, -1, (0, 255, 0))
+
     def show_dials_area(self):
         cv2.line(
             self.output,
@@ -300,8 +304,12 @@ class HotWaterMeter(object):
         filtered.sort(key=lambda x: cv2.boundingRect(x)[0])
         return filtered
 
-    def find_digit_bounding_boxes(self, bounding_boxes):
+    def find_digit_bounding_boxes(self, contours):
         longest_chain = []
+        bounding_boxes = []
+        for each in contours:
+            bounding_boxes.append(cv2.boundingRect(each))
+
         for bb in bounding_boxes:
             aligned = self.find_aligned_bounding_boxes(bb, bounding_boxes)
             if len(aligned) > len(longest_chain):
@@ -403,7 +411,7 @@ class HotWaterMeter(object):
 
 
     def filter_digit_contours(self, contours):
-        bounding_boxes = []
+        filtered = []
         for each in contours:
             bb = cv2.boundingRect(each)
             x, y, w, h = bb
@@ -417,8 +425,8 @@ class HotWaterMeter(object):
                 continue
             if w > h:
                 continue
-            bounding_boxes.append(bb)
-        return bounding_boxes
+                filtered.append(each)
+        return filtered
 
 
     def extract_digits(self, digit_bounding_boxes, img):
