@@ -56,7 +56,8 @@ class HotWaterMeter(object):
         self.process_digits()
         self.process_dials()
 
-        background_image = getattr(self, self.background)
+        background = self.settings.get("background", "gray")
+        background_image = getattr(self, background)
         self.output = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR)
         if self.settings.get("show_digits", False):
             self.show_digits()
