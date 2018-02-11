@@ -34,10 +34,10 @@ class HotWaterMeter(object):
 
     def process_image(self, image):
         w, h, _ = image.shape
-        x0 = w / 3
-        y0 = h / 2
-        roi_width = w / 3
-        roi_height = h / 3
+        x0 = int(w / 3)
+        y0 = int(h / 2)
+        roi_width = int(w / 3)
+        roi_height = int(h / 3)
         roi = image[y0:y0 + roi_height, x0:x0 + roi_width]
 
         self.image = cv2.resize(roi, (800, 600), interpolation=cv2.INTER_CUBIC)
