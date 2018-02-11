@@ -71,7 +71,7 @@ class HotWaterMeter(object):
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         self.digit_contours = self.filter_digit_contours(contours)
-        self.digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
+        self.digit_bounding_boxes = self.find_digit_bounding_boxes(contours)
         #self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
 
     def process_dials(self):
