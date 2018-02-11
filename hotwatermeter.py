@@ -69,12 +69,12 @@ class HotWaterMeter(object):
             cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
             5, 3)
 
-        ret, self.digits_threshold = cv2.threshold(self.gray, 45, 255, cv2.THRESH_BINARY_INV)
+        ret, self.digits_threshold = cv2.threshold(self.gray, 120, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         self.digit_contours = self.filter_digit_contours(contours)
         self.digit_bounding_boxes = self.find_digit_bounding_boxes(contours)
-        #self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
+        self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
 
     def process_dials(self):
         ret, self.dials_threshold = cv2.threshold(self.gray, 70, 255, cv2.THRESH_BINARY_INV)
