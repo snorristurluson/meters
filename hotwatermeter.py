@@ -33,7 +33,14 @@ class HotWaterMeter(object):
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0)]
 
     def process_image(self, image):
-        self.image = cv2.resize(image, (800, 600), interpolation=cv2.INTER_CUBIC)
+        w, h, _ = image.shape
+        x0 = w / 3
+        y0 = h / 2
+        roi_width = w / 3
+        roi_height = h / 3
+        roi = image[y0:y0 + roi_height, x0:x0 + roi_width]
+
+        self.image = cv2.resize(roi, (800, 600), interpolation=cv2.INTER_CUBIC)
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         self.gray = cv2.bilateralFilter(self.gray, 5, 150, 150)
 
@@ -371,52 +378,52 @@ class HotWaterMeter(object):
         return cropped_rotated
 
 
-def find_aligned_bounding_boxes(bb, bounding_boxes):
-    result = []
-    x0, y0, w0, h0 = bb
-    for candidate in bounding_boxes:
-        x, y, w, h = candidate
-        if abs(y - y0) < 10:
-            result.append(candidate)
-    result.sort()
+    def find_aligned_bounding_boxes(self, bb, bounding_boxes):
+        result = []
+        x0, y0, w0, h0 = bb
+        for candidate in bounding_boxes:
+            x, y, w, h = candidate
+            if abs(y - y0) < 10:
+                result.append(candidate)
+        result.sort()
 
-    # check for gaps and overlaps
-    final_result = [bb]
-    for candidate in result:
-        x, y, w, h = candidate
-        if x < x0 + w0 + 5:
-            if x > x0 and x + w > x0 + w0:
-                final_result.append(candidate)
-                x0 = x
-                w0 = w
+        # check for gaps and overlaps
+        final_result = [bb]
+        for candidate in result:
+            x, y, w, h = candidate
+            if x < x0 + w0 + 5:
+                if x > x0 and x + w > x0 + w0:
+                    final_result.append(candidate)
+                    x0 = x
+                    w0 = w
 
-    return final_result
-
-
-def filter_digit_contours(contours):
-    bounding_boxes = []
-    for each in contours:
-        bb = cv2.boundingRect(each)
-        x, y, w, h = bb
-        if w < 10:
-            continue
-        if h < 10:
-            continue
-        if w > 40:
-            continue
-        if h > 60:
-            continue
-        if w > h:
-            continue
-        bounding_boxes.append(bb)
-    return bounding_boxes
+        return final_result
 
 
-def extract_digits(digit_bounding_boxes, img):
-    digits = []
-    for bb in digit_bounding_boxes:
-        x, y, w, h = bb
-        digit = img[y:y + h, x:x + w].copy()
-        digit = cv2.resize(digit, (16, 16))
-        digits.append(digit)
-    return digits
+    def filter_digit_contours(self, contours):
+        bounding_boxes = []
+        for each in contours:
+            bb = cv2.boundingRect(each)
+            x, y, w, h = bb
+            if w < 10:
+                continue
+            if h < 10:
+                continue
+            if w > 40:
+                continue
+            if h > 60:
+                continue
+            if w > h:
+                continue
+            bounding_boxes.append(bb)
+        return bounding_boxes
+
+
+    def extract_digits(self, digit_bounding_boxes, img):
+        digits = []
+        for bb in digit_bounding_boxes:
+            x, y, w, h = bb
+            digit = img[y:y + h, x:x + w].copy()
+            digit = cv2.resize(digit, (16, 16))
+            digits.append(digit)
+        return digits
