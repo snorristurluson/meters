@@ -42,7 +42,7 @@ class HotWaterMeter(object):
 
         self.image = cv2.resize(roi, (800, 600), interpolation=cv2.INTER_CUBIC)
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        self.gray = cv2.bilateralFilter(self.gray, 5, 150, 150)
+        self.gray = cv2.bilateralFilter(self.gray, 5, 200, 200)
 
         self.process_digits()
         self.process_dials()
@@ -63,7 +63,7 @@ class HotWaterMeter(object):
         self.digits_threshold = cv2.adaptiveThreshold(
             self.digits_threshold, 255,
             cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV,
-            5, 3)
+            5, 2)
 
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
