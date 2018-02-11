@@ -67,9 +67,9 @@ class HotWaterMeter(object):
 
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
-        bounding_boxes = filter_digit_contours(contours)
+        bounding_boxes = self.filter_digit_contours(contours)
         self.digit_bounding_boxes = self.find_digit_bounding_boxes(bounding_boxes)
-        self.digits = extract_digits(self.digit_bounding_boxes, self.gray)
+        self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
 
     def process_dials(self):
         b, g, r = cv2.split(self.image)
@@ -301,7 +301,7 @@ class HotWaterMeter(object):
     def find_digit_bounding_boxes(self, bounding_boxes):
         longest_chain = []
         for bb in bounding_boxes:
-            aligned = find_aligned_bounding_boxes(bb, bounding_boxes)
+            aligned = self.find_aligned_bounding_boxes(bb, bounding_boxes)
             if len(aligned) > len(longest_chain):
                 longest_chain = aligned
 
