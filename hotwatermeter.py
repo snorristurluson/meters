@@ -416,13 +416,13 @@ class HotWaterMeter(object):
         for each in contours:
             bb = cv2.boundingRect(each)
             x, y, w, h = bb
-            if w < 30:
+            if w < 10:
                 continue
-            if h < 30:
+            if h < 10:
                 continue
-            if w > 60:
+            if w > 40:
                 continue
-            if h > 80:
+            if h > 40:
                 continue
             if w > h:
                 continue
