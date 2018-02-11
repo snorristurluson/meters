@@ -40,6 +40,7 @@ class HotWaterMeter(object):
         roi_width = int(w / 3)
         roi_height = int(h / 3)
         roi = image[y0:y0 + roi_height, x0:x0 + roi_width]
+        print(roi_width, roi_height)
 
         self.image = cv2.resize(roi, (800, 600), interpolation=cv2.INTER_CUBIC)
         _, g, _ = cv2.split(self.image)
