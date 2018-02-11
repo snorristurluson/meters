@@ -26,6 +26,7 @@ class HotWaterMeter(object):
         self.digit_bounding_boxes = []
         self.last_known_digit_bounding_boxes = []
         self.digit_vertical_pos = 0
+        self.unfiltered_digit_contours = []
         self.dial_contours = []
         self.dial_images = []
         self.dial_angles = [0, 0, 0, 0]
@@ -71,6 +72,8 @@ class HotWaterMeter(object):
             self.show_dials_boxes()
         if self.settings.get("show_dials_contours", False):
             self.show_dials_contours()
+        if self.settings.get("show_unfiltered_digit_contours", False):
+            self.show_unfiltered_digit_contours()
         if self.settings.get("show_digit_contours", False):
             self.show_digit_contours()
         if self.settings.get("show_dials_hulls", False):
@@ -92,9 +95,9 @@ class HotWaterMeter(object):
         threshold = self.settings.get("digits_threshold_value", 130)
         ret, self.digits_threshold = cv2.threshold(self.gray, threshold, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.digits_threshold.copy()
-        _, contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        self.digit_contours = self.filter_digit_contours(contours)
-        self.digit_bounding_boxes = self.find_digit_bounding_boxes(contours)
+        _, self.unfiltered_digit_contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        self.digit_contours = self.filter_digit_contours(self.unfiltered_digit_contours)
+        self.digit_bounding_boxes = self.find_digit_bounding_boxes(self.digit_contours)
         self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
 
     def process_dials(self):
@@ -254,6 +257,9 @@ class HotWaterMeter(object):
 
     def show_dials_contours(self):
         cv2.drawContours(self.output, self.dial_contours, -1, (0, 255, 0))
+
+    def show_unfiltered_digit_contours(self):
+        cv2.drawContours(self.output, self.unfiltered_digit_contours, -1, (255, 255, 0))
 
     def show_digit_contours(self):
         cv2.drawContours(self.output, self.digit_contours, -1, (255, 0, 0))
