@@ -42,7 +42,8 @@ class HotWaterMeter(object):
         roi = image[y0:y0 + roi_height, x0:x0 + roi_width]
 
         self.image = cv2.resize(roi, (800, 600), interpolation=cv2.INTER_CUBIC)
-        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        _, g, _ = cv2.split(self.image)
+        self.gray = g
         self.gray = cv2.bilateralFilter(self.gray, 5, 200, 200)
 
         self.process_digits()
@@ -75,8 +76,7 @@ class HotWaterMeter(object):
         #self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
 
     def process_dials(self):
-        b, g, r = cv2.split(self.image)
-        ret, self.dials_threshold = cv2.threshold(g, 70, 255, cv2.THRESH_BINARY_INV)
+        ret, self.dials_threshold = cv2.threshold(self.gray, 70, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.dials_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         self.dial_contours = self.filter_dial_contours(contours)
