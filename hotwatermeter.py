@@ -58,7 +58,11 @@ class HotWaterMeter(object):
 
         background = self.settings.get("background", "gray")
         background_image = getattr(self, background)
-        self.output = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR)
+        if len(background_image.shape) > 2:
+            self.output = background_image
+        else:
+            self.output = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR)
+
         if self.settings.get("show_digits", False):
             self.show_digits()
         if self.settings.get("show_dials", False):
@@ -85,7 +89,8 @@ class HotWaterMeter(object):
             cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
             5, 3)
 
-        ret, self.digits_threshold = cv2.threshold(self.gray, 130, 255, cv2.THRESH_BINARY_INV)
+        threshold = self.settings.get("digits_threshold_value", 130)
+        ret, self.digits_threshold = cv2.threshold(self.gray, threshold, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.digits_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         self.digit_contours = self.filter_digit_contours(contours)
@@ -93,7 +98,8 @@ class HotWaterMeter(object):
         self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
 
     def process_dials(self):
-        ret, self.dials_threshold = cv2.threshold(self.gray, 70, 255, cv2.THRESH_BINARY_INV)
+        threshold = self.settings.get("dials_threshold_value", 70)
+        ret, self.dials_threshold = cv2.threshold(self.gray, threshold, 255, cv2.THRESH_BINARY_INV)
         for_contours = self.dials_threshold.copy()
         _, contours, _ = cv2.findContours(for_contours, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         self.dial_contours = self.filter_dial_contours(contours)
@@ -332,11 +338,13 @@ class HotWaterMeter(object):
             if len(aligned) > len(longest_chain):
                 longest_chain = aligned
 
-        if len(longest_chain) < 5:
+        min_digit_chain = self.settings.get("min_digit_chain", 5)
+        max_digit_chain = self.settings.get("max_digit_chain", 5)
+        if len(longest_chain) < min_digit_chain:
             return self.last_known_digit_bounding_boxes
 
-        if len(longest_chain) > 5:
-            longest_chain = longest_chain[:5]
+        if len(longest_chain) > max_digit_chain:
+            longest_chain = longest_chain[:max_digit_chain]
 
         first_digit = longest_chain[0]
         last_digit = longest_chain[-1]
@@ -429,16 +437,20 @@ class HotWaterMeter(object):
 
     def filter_digit_contours(self, contours):
         filtered = []
+        min_digit_contour_width = self.settings.get("min_digit_contour_width", 30)
+        max_digit_contour_width = self.settings.get("max_digit_contour_width", 80)
+        min_digit_contour_height = self.settings.get("min_digit_contour_height", 30)
+        max_digit_contour_height = self.settings.get("max_digit_contour_height", 80)
         for each in contours:
             bb = cv2.boundingRect(each)
             x, y, w, h = bb
-            if w < 30:
+            if w < min_digit_contour_width:
                 continue
-            if h < 30:
+            if h < min_digit_contour_height:
                 continue
-            if w > 80:
+            if w > max_digit_contour_width:
                 continue
-            if h > 80:
+            if h > max_digit_contour_height:
                 continue
             if w > h:
                 continue
