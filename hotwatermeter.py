@@ -1,3 +1,4 @@
+import json
 import math
 
 import cv2
@@ -34,6 +35,11 @@ class HotWaterMeter(object):
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0)]
 
     def process_image(self, image):
+        try:
+            self.settings = json.load(open("settings.json"))
+        except Exception:
+            self.settings = {}
+
         h, w, _ = image.shape
         x0 = int(w / 3)
         y0 = int(h / 2)
@@ -52,14 +58,22 @@ class HotWaterMeter(object):
 
         background_image = getattr(self, self.background)
         self.output = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR)
-        self.show_digits()
-        self.show_dials()
-        self.show_dials_boxes()
-        self.show_dials_contours()
-        self.show_digit_contours()
-        self.show_dials_hulls()
-        self.show_dials_lines()
-        self.show_dials_area()
+        if self.settings.get("show_digits", False):
+            self.show_digits()
+        if self.settings.get("show_dials", False):
+            self.show_dials()
+        if self.settings.get("show_dials_boxes", False):
+            self.show_dials_boxes()
+        if self.settings.get("show_dials_contours", False):
+            self.show_dials_contours()
+        if self.settings.get("show_digit_contours", False):
+            self.show_digit_contours()
+        if self.settings.get("show_dials_hulls", False):
+            self.show_dials_hulls()
+        if self.settings.get("show_dials_lines", False):
+            self.show_dials_lines()
+        if self.settings.get("show_dials_area", False):
+            self.show_dials_area()
 
         return self.output
 
