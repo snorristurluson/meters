@@ -140,7 +140,6 @@ class HotWaterMeter(object):
                 angle = -math.atan2(vy, vx)
                 angle_as_degrees = angle * 180 / math.pi
                 h, w = dial.shape
-                print(ix, w, h)
                 w_2 = int(w / 2)
                 h_2 = int(h / 2)
                 if w > h:
@@ -149,7 +148,6 @@ class HotWaterMeter(object):
                     right = dial[0:h, w_2:w]
                     left_mean = cv2.mean(left)[0]
                     right_mean = cv2.mean(right)[0]
-                    print(ix, "horizontal", left_mean, right_mean, angle_as_degrees)
                     if left_mean < right_mean:
                         # Image is darker on the left side, meaning the
                         # tip of the needle is on the left.
@@ -164,7 +162,6 @@ class HotWaterMeter(object):
                     bottom = dial[h_2:h, 0:w]
                     top_mean = cv2.mean(top)[0]
                     bottom_mean = cv2.mean(bottom)[0]
-                    print(ix, "vertical", top_mean, bottom_mean, angle_as_degrees)
                     if top_mean < bottom_mean:
                         # Image is darker on the top, meaning the
                         # tip of the needle is on top
@@ -173,6 +170,11 @@ class HotWaterMeter(object):
                     else:
                         if angle_as_degrees > 0:
                             angle_as_degrees += 180
+
+                while angle_as_degrees < 0:
+                    angle_as_degrees += 360.0
+                while angle_as_degrees >= 360.0:
+                    angle_as_degrees -= 360.0
 
                 self.dial_values[ix] = int(angle_as_degrees / 36.0)
                 self.dial_angles[ix] = angle_as_degrees
