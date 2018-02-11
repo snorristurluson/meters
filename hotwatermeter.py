@@ -30,6 +30,7 @@ class HotWaterMeter(object):
         self.dial_contours = []
         self.dial_images = []
         self.dial_angles = [0, 0, 0, 0]
+        self.dial_values = [0, 0, 0, 0]
         self.dial_bounds = [(SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0),
@@ -173,11 +174,12 @@ class HotWaterMeter(object):
                         if angle_as_degrees > 0:
                             angle_as_degrees += 180
 
+                self.dial_values[ix] = int(angle_as_degrees / 36)
                 self.dial_angles[ix] = angle_as_degrees
                 ix += 1
 
-            print("Dials: {:.4}  {:.4}  {:.4}  {:.4}".format(
-                self.dial_angles[0], self.dial_angles[1], self.dial_angles[2], self.dial_angles[3]
+            print("Dials: {0} {1} {2} {3}".format(
+                self.dial_values[3], self.dial_values[2], self.dial_values[1], self.dial_values[0]
             ))
 
             # self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
@@ -238,8 +240,8 @@ class HotWaterMeter(object):
     def show_dials_lines(self):
         x0 = 32
         y0 = 64
-        for angle_in_degrees in self.dial_angles:
-            angle = angle_in_degrees * math.pi / 180
+        for dial_value in self.dial_values:
+            angle = dial_value * 36 * math.pi / 180
             pt1 = (x0, y0)
             pt2 = (x0 + int(math.cos(angle) * 24), int(y0 - math.sin(angle) * 24))
             self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
