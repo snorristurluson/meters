@@ -428,11 +428,12 @@ class HotWaterMeter(object):
                 result.append(candidate)
         result.sort()
 
+        max_digit_gap = self.settings.get("max_digit_gap", 5)
         # check for gaps and overlaps
         final_result = [bb]
         for candidate in result:
             x, y, w, h = candidate
-            if x < x0 + w0 + 5:
+            if x < x0 + w0 + max_digit_gap:
                 if x > x0 and x + w > x0 + w0:
                     final_result.append(candidate)
                     x0 = x
