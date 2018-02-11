@@ -171,6 +171,13 @@ class HotWaterMeter(object):
                         if angle_as_degrees > 0:
                             angle_as_degrees += 180
 
+                # The 0 point is at the top, at 90 degrees from the origin
+                angle_as_degrees += 90
+
+                # Angle is positive in the anti-clockwise direction,
+                # but the dial value goes clockwise
+                angle_as_degrees = -angle_as_degrees
+
                 while angle_as_degrees < 0:
                     angle_as_degrees += 360.0
                 while angle_as_degrees >= 360.0:
@@ -243,7 +250,7 @@ class HotWaterMeter(object):
         x0 = 32
         y0 = 64
         for dial_value in self.dial_values:
-            angle = dial_value * 36 * math.pi / 180
+            angle = (-dial_value * 36 - 90) * math.pi / 180
             pt1 = (x0, y0)
             pt2 = (x0 + int(math.cos(angle) * 24), int(y0 - math.sin(angle) * 24))
             self.output = cv2.line(self.output, pt1, pt2, (0, 0, 255), 2)
