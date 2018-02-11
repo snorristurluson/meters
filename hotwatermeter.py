@@ -265,31 +265,40 @@ class HotWaterMeter(object):
         cv2.drawContours(self.output, self.digit_contours, -1, (255, 0, 0))
 
     def show_dials_area(self):
+        dial_area_top_offset = self.settings.get("dial_area_top_offset", 20)
+        dial_area_height = self.settings.get("dial_area_height", 80)
+        dial_area_left_offset = self.settings.get("dial_area_left_offset", 40)
+        dial_area_right_offset = self.settings.get("dial_area_right_offset", 40)
+
         cv2.line(
             self.output,
-            (self.digit_pos_min - DIAL_AREA_LEFT_OFFSET, self.digit_vertical_pos),
+            (self.digit_pos_min - dial_area_left_offset, self.digit_vertical_pos),
             (self.digit_pos_max, self.digit_vertical_pos),
             (0, 0, 255),
             2
         )
         cv2.line(
             self.output,
-            (self.digit_pos_min - DIAL_AREA_LEFT_OFFSET, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
-            (self.digit_pos_max, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
+            (self.digit_pos_min - dial_area_left_offset, self.digit_vertical_pos + dial_area_height),
+            (self.digit_pos_max, self.digit_vertical_pos + dial_area_height),
             (0, 0, 255),
             2
         )
         cv2.line(
             self.output,
-            (self.digit_pos_min - DIAL_AREA_LEFT_OFFSET, self.digit_vertical_pos),
-            (self.digit_pos_min - DIAL_AREA_LEFT_OFFSET, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
+            (self.digit_pos_min - dial_area_left_offset,
+             self.digit_vertical_pos + dial_area_top_offset),
+            (self.digit_pos_min - dial_area_left_offset,
+             self.digit_vertical_pos + dial_area_top_offset + dial_area_height),
             (0, 0, 255),
             2
         )
         cv2.line(
             self.output,
-            (self.digit_pos_max, self.digit_vertical_pos),
-            (self.digit_pos_max, self.digit_vertical_pos + DIAL_AREA_HEIGHT),
+            (self.digit_pos_max + dial_area_right_offset,
+             self.digit_vertical_pos + dial_area_top_offset),
+            (self.digit_pos_max + dial_area_right_offset,
+             self.digit_vertical_pos + dial_area_top_offset + dial_area_height),
             (0, 0, 255),
             2
         )
@@ -300,6 +309,7 @@ class HotWaterMeter(object):
         dial_area_top_offset = self.settings.get("dial_area_top_offset", 20)
         dial_area_height = self.settings.get("dial_area_height", 80)
         dial_area_left_offset = self.settings.get("dial_area_left_offset", 40)
+        dial_area_right_offset = self.settings.get("dial_area_right_offset", 40)
 
         for each in contours:
             aabb = cv2.boundingRect(each)
@@ -320,7 +330,7 @@ class HotWaterMeter(object):
                 continue
             if aax < self.digit_pos_min - dial_area_left_offset:
                 continue
-            if aax > self.digit_pos_max:
+            if aax > self.digit_pos_max + dial_area_right_offset:
                 continue
 
             # We know the approximate size of the dials
