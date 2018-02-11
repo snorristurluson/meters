@@ -1,9 +1,7 @@
 import cv2
 from flask import render_template, Response, Flask
 
-from dials import process_dials
-from digits import process_digits
-from main import HotWaterMeter
+from hotwatermeter import HotWaterMeter
 
 
 class VideoCamera(object):
