@@ -1,4 +1,5 @@
 import time
+import sys
 
 from camera import VideoCamera
 from hotwatermeter import HotWaterMeter
@@ -12,6 +13,7 @@ def main():
     while True:
         camera.get_frame()
         time.sleep(0.8)
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
