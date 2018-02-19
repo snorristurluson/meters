@@ -12,8 +12,8 @@ def main():
     camera = VideoCamera(meter.process_image)
     while True:
         camera.get_frame()
-        time.sleep(0.8)
         sys.stdout.flush()
+        time.sleep(1)
 
 
 if __name__ == "__main__":

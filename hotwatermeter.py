@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 import time
 
+from traindigits import process_training_digits
+
 SOURCE_IMAGE_WIDTH = 800
 SOURCE_IMAGE_HEIGHT = 600
 DIAL_AREA_LEFT_OFFSET = 50
@@ -21,6 +23,7 @@ class HotWaterMeter(object):
         self.output = None
         self.background = "dials_threshold"
         self.digits = []
+        self.digit_values = [-1, -1, -1, -1, -1]
         self.digit_pos_min = SOURCE_IMAGE_WIDTH
         self.digit_pos_max = 0
         self.digit_contours = []
@@ -38,12 +41,16 @@ class HotWaterMeter(object):
                             (SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT, 0, 0)]
 
         self.last_save_time = time.time()
+        self.load_settings()
+
+        trainData, trainLabels = process_training_digits("training_data", 1000)
+
+        self.knn = cv2.ml.KNearest_create()
+        self.knn.train(trainData, cv2.ml.ROW_SAMPLE, trainLabels)
+
 
     def process_image(self, image):
-        try:
-            self.settings = json.load(open("settings.json"))
-        except Exception:
-            self.settings = {}
+        self.load_settings()
 
         h, w, _ = image.shape
         x0 = int(w / 3)
@@ -64,6 +71,22 @@ class HotWaterMeter(object):
 
         self.process_digits()
         self.process_dials()
+
+        values = [
+            self.digit_values[0],
+            self.digit_values[1],
+            self.digit_values[2],
+            self.digit_values[3],
+            self.digit_values[4],
+            self.dial_values[3],
+            self.dial_values[2],
+            self.dial_values[1],
+            self.dial_values[0]
+        ]
+
+        timestamp = time.strftime("%Y/%m/%d-%H:%M:%S")
+        output = " ".join([str(x) for x in values])
+        print(timestamp, output)
 
         background = self.settings.get("background", "gray")
         background_image = getattr(self, background)
@@ -108,6 +131,12 @@ class HotWaterMeter(object):
 
         return self.output
 
+    def load_settings(self):
+        try:
+            self.settings = json.load(open("settings.json"))
+        except Exception:
+            self.settings = {}
+
     def process_digits(self):
         self.digits_threshold = cv2.medianBlur(self.gray, 3)
         self.digits_threshold = cv2.adaptiveThreshold(
@@ -134,6 +163,25 @@ class HotWaterMeter(object):
         self.digit_contours = self.filter_digit_contours(self.unfiltered_digit_contours)
         self.digit_bounding_boxes = self.find_digit_bounding_boxes(self.digit_contours)
         self.digits = self.extract_digits(self.digit_bounding_boxes, self.gray)
+        self.digit_values = self.extract_digit_values(self.digits)
+
+    def extract_digit_values(self, digit_images):
+        digit_values = []
+        for each in digit_images:
+            testData = np.array([each])
+            testData = testData.reshape(-1, 256).astype(np.float32)
+
+            ret, result, neighbours, dist = self.knn.findNearest(testData, 5)
+            digit = str(int(ret))
+            avg_dist = np.average(dist)
+            if avg_dist > 150000:
+                digit = -1
+            digit_values.append(digit)
+
+        while len(digit_values) < 5:
+            digit_values.append(-1)
+
+        return digit_values
 
     def process_dials(self):
         threshold = self.settings.get("dials_threshold_value", 70)
@@ -216,10 +264,6 @@ class HotWaterMeter(object):
                 self.dial_values[ix] = int(angle_as_degrees / 36.0)
                 self.dial_angles[ix] = angle_as_degrees
                 ix += 1
-
-            print("Dials: {0} {1} {2} {3}".format(
-                self.dial_values[3], self.dial_values[2], self.dial_values[1], self.dial_values[0]
-            ))
 
             # self.dial_images = self.extract_images(self.dials_threshold, self.dial_bounds, (32, 32))
         else:

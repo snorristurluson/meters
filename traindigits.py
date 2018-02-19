@@ -6,7 +6,6 @@ import os
 
 
 def get_single_digit_from_file(name):
-    print(name)
     img = cv2.imread(name)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     return img
