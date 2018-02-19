@@ -1,44 +1,75 @@
+import shutil
+
 import cv2
 import numpy as np
 import os
 
 
-def get_digit(name):
+def get_single_digit_from_file(name):
+    print(name)
     img = cv2.imread(name)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     return img
 
 
-def get_digits(folder, n):
+def process_training_digit_folder(folder, n):
     filenames = os.listdir(folder)[:n]
     data = []
     for each in filenames:
-        name = os.path.join(folder, each)
-        data.append(get_digit(name))
+        if each.endswith(".png"):
+            name = os.path.join(folder, each)
+            data.append(get_single_digit_from_file(name))
     return data
 
 
+def process_training_digits(folder, n):
+    combined = []
+    labels = []
+    folders = os.listdir(folder)
+    for subfolder in folders:
+        if len(subfolder) != 1:
+            continue
+        digit = int(subfolder)
+        path = os.path.join(folder, subfolder)
+        if os.path.isdir(path):
+            entries = process_training_digit_folder(path, n)
+            combined += entries
+            labels += [digit] * len(entries)
+
+    trainData = np.array(combined).reshape(-1, 256).astype(np.float32)
+    return trainData, np.array(labels)
+
+
+def process_folder(src, dst, knn):
+    contents = os.listdir(src)
+    for each in contents:
+        if each.endswith(".png"):
+            path = os.path.join(src, each)
+            data = get_single_digit_from_file(path)
+
+            testData = np.array([data])
+            testData = testData.reshape(-1, 256).astype(np.float32)
+
+            ret, result, neighbours, dist = knn.findNearest(testData, 5)
+            digit = str(int(ret))
+            avg_dist = np.average(dist)
+            if avg_dist < 150000:
+                dst_path = os.path.join(dst, digit)
+            else :
+                dst_path = os.path.join(dst, "unknown")
+
+            if not os.path.isdir(dst_path):
+                os.makedirs(dst_path)
+            shutil.copy(path, os.path.join(dst_path, each))
+
 def main():
-    data0 = get_digits("digits/0", 3)
-    data5 = get_digits("digits/5", 3)
-    data7 = get_digits("digits/7", 3)
-    data8 = get_digits("digits/8", 3)
-    data9 = get_digits("digits/9", 3)
-    combined = np.array(data0 + data5 + data7 + data8 + data9)
-    trainData = combined.reshape(-1, 256).astype(np.float32)
-    #print(trainData)
+    trainData, trainLabels = process_training_digits("training_data", 1000)
 
     knn = cv2.ml.KNearest_create()
 
-    trainLabels = np.array([0, 0, 0, 5, 5, 5, 7, 7, 7, 8, 8, 8, 9, 9, 9])
     knn.train(trainData, cv2.ml.ROW_SAMPLE, trainLabels)
 
-    test = get_digit("digits/8/digit_4_20180218_023522.png")
-    testData = np.array([test])
-    testData = testData.reshape(-1, 256).astype(np.float32)
-    #print(testData)
-
-    print(knn.findNearest(testData, 5))
+    process_folder("digits", "sorted_digits", knn)
 
 if __name__ == "__main__":
     main()
