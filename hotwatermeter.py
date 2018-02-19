@@ -138,12 +138,6 @@ class HotWaterMeter(object):
             self.settings = {}
 
     def process_digits(self):
-        self.digits_threshold = cv2.medianBlur(self.gray, 3)
-        self.digits_threshold = cv2.adaptiveThreshold(
-            self.digits_threshold, 255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
-            5, 3)
-
         threshold = self.settings.get("digits_threshold_value", 130)
         digit_contour_method = self.settings.get(
             "digit_contour_method", cv2.RETR_TREE)
