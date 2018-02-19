@@ -174,7 +174,7 @@ class HotWaterMeter(object):
             ret, result, neighbours, dist = self.knn.findNearest(testData, 5)
             digit = str(int(ret))
             avg_dist = np.average(dist)
-            if avg_dist > 150000:
+            if avg_dist > self.settings.get("digit_distance_threshold", 500000):
                 digit = -1
             digit_values.append(digit)
 
